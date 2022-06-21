@@ -1,3 +1,14 @@
+Microcurrency Edition
+=====================================
+This is a fork of bitcoin core (v23.0 fcf6c8f4eb217763545ede1766831a6b93f583bd)
+
+It has been modified to support the initial distribution of microcurrencies
+leading up to their respective hard forks.
+
+The development philosophy is to code as if these changes will be accepted into the
+"official" bitcoin client while still achieving the desired functionality.
+
+
 Bitcoin Core integration/staging tree
 =====================================
 
