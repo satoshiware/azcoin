@@ -10,7 +10,7 @@
 #define BECH32HRP           "tstn"
 
 #define BLOCKREWARD         32          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
-#define MAXSUPPLY           21000000    // Bitcoin's Max Supply = 21000000
+#define MAXSUPPLY           13440000    // Bitcoin's Max Supply = 21000000
 
 #define TIMESTAMP           "AZ Republic Jun/17/2022 Diamondbacks use long ball, small ball to thmp Twins in series open"
 #define TIME                1655529249
