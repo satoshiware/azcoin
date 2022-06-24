@@ -25,6 +25,6 @@
 #define PCHMESSAGESTART3    0xd9
 		
 // Common to all micros
-static const unsigned int MAXBLOCKSIZE = 4000000; // Bitcoin's Max Block Size = 4000000
+#define MAXBLOCKSIZE		4000000		// Bitcoin's Max Block Size = 4000000
 
 #endif BITCOIN_MICROS_MICRO_BITCOIN_H
