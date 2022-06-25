@@ -110,6 +110,12 @@ int fork_daemon(bool nochdir, bool noclose, TokenPipeEnd& endpoint)
 
 static bool AppInit(NodeContext& node, int argc, char* argv[])
 {
+    bool microcurrency = false;
+#ifdef MICRONAME
+    microcurrency = true;
+    std::cout << "This is a microcurrency implementation for \"" << MICRONAME << "\"\n";
+#endif // MICRONAME
+
     bool fRet = false;
 
     util::ThreadSetInternalName("init");
@@ -136,6 +142,26 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
 
         tfm::format(std::cout, "%s", strUsage);
         return true;
+    }
+
+    if (microcurrency) {
+        if (args.GetArg("-chain", "") != "micro" && !args.IsArgSet("-micro"))
+            return InitError(Untranslated(strprintf("Command line argument missing! Run bitcoind with -micro or -chain=micro")));
+        if (args.GetArg("-connect", "") == "")
+            return InitError(Untranslated(strprintf("Command line argument missing! Run bitcoind with -connect=<ip:port>")));
+        if (args.GetArg("-port", "") == "")
+            return InitError(Untranslated(strprintf("Command line argument missing! Run bitcoind with -port=<port>")));
+
+        args.ForceSetArg("-discover", "0");
+        LogPrintf("Microcurrency parameter interaction (forced): -discover=0\n");
+        if (args.SoftSetBoolArg("-listen", true))
+            LogPrintf("Microcurrency parameter interaction (soft): -listen=1\n");
+        if (args.SoftSetBoolArg("-listenonion", false))
+            LogPrintf("Microcurrency parameter interaction (soft): -listenonion=0\n");
+        if (args.SoftSetBoolArg("-upnp", false))
+            LogPrintf("Microcurrency parameter interaction (soft): -upnp=0\n");
+        if (args.SoftSetBoolArg("-natpmp", false))
+            LogPrintf("Microcurrency parameter interaction (soft): -natpmp=0\n");
     }
 
 #if HAVE_DECL_FORK
