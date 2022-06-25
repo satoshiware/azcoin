@@ -27,4 +27,4 @@
 // Common to all micros
 #define MAXBLOCKSIZE		4000000		// Bitcoin's Max Block Size = 4000000
 
-#endif BITCOIN_MICROS_MICRO_BITCOIN_H
+#endif // BITCOIN_MICROS_MICRO_BITCOIN_H
