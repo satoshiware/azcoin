@@ -148,6 +148,8 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
         if (args.GetArg("-chain", "") != "micro" && !args.IsArgSet("-micro"))
             return InitError(Untranslated(strprintf("Command line argument missing! Run bitcoind with -micro or -chain=micro")));
 
+        args.ForceSetArg("-dnsseed", "0");
+        LogPrintf("Microcurrency parameter interaction (forced): -dnsseed=0\n");
         args.ForceSetArg("-discover", "0");
         LogPrintf("Microcurrency parameter interaction (forced): -discover=0\n");
         if (args.SoftSetBoolArg("-listen", true))
