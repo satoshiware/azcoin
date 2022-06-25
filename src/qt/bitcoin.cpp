@@ -476,6 +476,10 @@ static void SetupUIArgs(ArgsManager& argsman)
 
 int GuiMain(int argc, char* argv[])
 {
+#ifdef MICRONAME
+    return EXIT_FAILURE; // There is currently no QT (GUI) microcurrency support
+#endif // MICRONAME
+
 #ifdef WIN32
     util::WinCmdLineArgs winArgs;
     std::tie(argc, argv) = winArgs.get();
