@@ -53,7 +53,7 @@ std::unique_ptr<CBaseChainParams> CreateBaseChainParams(const std::string& chain
     } else if (chain == CBaseChainParams::REGTEST) {
         return std::make_unique<CBaseChainParams>("regtest", 18443, 18445);
     } else if (chain == CBaseChainParams::MICRO) {
-        return std::make_unique<CBaseChainParams>("micro", 0, 0);
+        return std::make_unique<CBaseChainParams>("micro", 19332, 19334);
     }
     throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }

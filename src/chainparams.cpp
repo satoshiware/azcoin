@@ -537,7 +537,7 @@ public:
         pchMessageStart[1] = PCHMESSAGESTART1;
         pchMessageStart[2] = PCHMESSAGESTART2;
         pchMessageStart[3] = PCHMESSAGESTART3;
-        nDefaultPort = 0;
+        nDefaultPort = 19333;
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size = 0;
         m_assumed_chain_state_size = 0;
