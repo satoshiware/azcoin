@@ -525,7 +525,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;
 
-        consensus.nMinimumChainWork = consensus.powLimit;
+        consensus.nMinimumChainWork = uint256();
         consensus.defaultAssumeValid = uint256();
 
         /**
