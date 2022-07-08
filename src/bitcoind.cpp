@@ -138,7 +138,7 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
         return true;
     }
 
-#ifdef MICROCURRENCY
+#ifdef MICROCURRENCY // If compiled for a microcurrency then it must run that microcurrency!
     if (args.GetArg("-chain", "") != "micro" && !args.IsArgSet("-micro"))
         return InitError(Untranslated(strprintf("Command line argument missing for \"%s\" microcurrency!\n       Run bitcoind with -micro or -chain=micro", MICROCURRENCY)));
 #endif // MICROCURRENCY
