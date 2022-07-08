@@ -6,7 +6,7 @@
 #ifndef BITCOIN_MICROS_MICRO_TESTN_H
 #define BITCOIN_MICROS_MICRO_TESTN_H
 
-#define MICRONAME           "testn"
+#define MICROCURRENCY       "testn"
 #define BECH32HRP           "tstn"
 
 #define BLOCKREWARD         32          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!

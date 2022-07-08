@@ -5,7 +5,7 @@
 #ifndef BITCOIN_MICROS_MICRO_AZCOIN_H
 #define BITCOIN_MICROS_MICRO_AZCOIN_H
 
-#define MICRONAME           "azcoin"
+#define MICROCURRENCY       "azcoin"
 #define BECH32HRP           "az"
 
 #define BLOCKREWARD         18          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!

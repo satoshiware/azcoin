@@ -5,7 +5,7 @@
 #ifndef BITCOIN_MICROS_MICRO_BITCOIN_H
 #define BITCOIN_MICROS_MICRO_BITCOIN_H
 
-//#define MICRONAME           "bitcoin" // Leave undefined for bitcoin!
+//#define MICROCURRENCY           "bitcoin" // Leave undefined for bitcoin!
 #define BECH32HRP           "bc"
 
 #define BLOCKREWARD         50          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
