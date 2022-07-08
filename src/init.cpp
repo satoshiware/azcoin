@@ -643,6 +643,25 @@ static bool AppInitServers(NodeContext& node)
 // Parameter interaction based on rules
 void InitParameterInteraction(ArgsManager& args)
 {
+    // Parameters to help build a closed community during initial distribution of a new microcurrency
+    if (args.IsArgSet("-micro") || args.GetArg("-chain", "") == "micro") {
+        if (args.SoftSetBoolArg("-connect", false))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -connect=0\n", __func__);
+        if (args.SoftSetBoolArg("-listen", true))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -listen=1\n", __func__);
+        if (args.SoftSetBoolArg("-upnp", false))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -upnp=0\n", __func__);
+        if (args.SoftSetBoolArg("-natpmp", false))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -natpmp=0\n", __func__);
+        if (args.SoftSetBoolArg("-discover", false))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -discover=0\n", __func__);
+        if (args.SoftSetBoolArg("-listenonion", false))
+            LogPrintf("%s: parameter interaction: -micro set -> setting -listenonion=0\n", __func__);
+        if (args.SoftSetBoolArg("-i2pacceptincoming", false)) {
+            LogPrintf("%s: parameter interaction: -micro set -> setting -i2pacceptincoming=0\n", __func__);
+        }
+    }
+
     // when specifying an explicit binding address, you want to listen on it
     // even when -connect or -proxy is specified
     if (args.IsArgSet("-bind")) {
