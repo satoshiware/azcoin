@@ -1,13 +1,14 @@
-Microcurrency Edition
+Bitcoin's Microcurrency Edition
 =====================================
-This is a fork of bitcoin core (v23.0 fcf6c8f4eb217763545ede1766831a6b93f583bd)
+Forked bitcoin core (v23.0, branch:fcf6c8f4eb217763545ede1766831a6b93f583bd)
 
-It has been modified to support the initial distribution of microcurrencies
-leading up to their respective hard forks.
+Program has been modified to support the initial distribution of microcurrencies
+leading up to their respective hard forks. After the coins are distributed, the
+new blockchain will be hard forked where only the standard (non-scripted) bech32 UTXOs
+will be honored. Bech32 addresses will start with a code unique to each microcurrency.
 
 The development philosophy is to code as if these changes will be accepted into the
 "official" bitcoin client while still achieving the desired functionality.
-
 
 Bitcoin Core integration/staging tree
 =====================================
