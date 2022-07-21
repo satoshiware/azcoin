@@ -1,6 +1,6 @@
 Bitcoin's Microcurrency Edition
 =====================================
-Forked bitcoin core (v23.0, branch:fcf6c8f4eb217763545ede1766831a6b93f583bd)
+Forked bitcoin core (v23.0, fcf6c8f4eb217763545ede1766831a6b93f583bd)
 
 Program has been modified to support the initial distribution of microcurrencies
 leading up to their respective hard forks. After the coins are distributed, the
