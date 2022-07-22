@@ -7,11 +7,6 @@
 #
 #	Note: Add a branch name as a command line parameter to compile it with all
 #		defaults selected.
-#
-#	Commands to download and run this file in home (~) directory:
-#		curl https://raw.githubusercontent.com/satoshiware/bitcoin/share/micro/scripts/linux_compile.sh --output ~
-#		cd ~
-#		sudo bash ./linux_compile.sh
 ###############################################################################
 
 ###### Update/Upgrade ######
