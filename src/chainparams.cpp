@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparams.h>
+#include <micros/micro.h>
 
 #include <chainparamsseeds.h>
 #include <consensus/merkle.h>
@@ -489,6 +490,98 @@ public:
     void UpdateActivationParametersFromArgs(const ArgsManager& args);
 };
 
+/**
+ * A microcurrency network on which people trade goods and services.
+ */
+class CMicroParams : public CChainParams {
+public:
+    CMicroParams() {
+        strNetworkID = CBaseChainParams::MICRO;
+        consensus.signet_blocks = false;
+        consensus.signet_challenge.clear();
+        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.BIP34Height = 0;
+        consensus.BIP34Hash = uint256();
+        consensus.BIP65Height = 0;
+        consensus.BIP66Height = 0;
+        consensus.CSVHeight = 0;
+        consensus.SegwitHeight = 0;
+        consensus.MinBIP9WarningHeight = 0;
+        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nPowTargetTimespan = 1 * 24 * 60 * 60; // One Day
+        consensus.nPowTargetSpacing = 1 * 60;            // One Minute
+        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowNoRetargeting = false;
+        consensus.nRuleChangeActivationThreshold = 1815; // 90% of 2016
+        consensus.nMinerConfirmationWindow = 2016;       // nPowTargetTimespan / nPowTargetSpacing
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0; // No activation delay
+
+        // Deployment of Taproot (BIPs 340-342)
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;
+
+        consensus.nMinimumChainWork = uint256();
+        consensus.defaultAssumeValid = uint256();
+
+        /**
+             * The message start string is designed to be unlikely to occur in normal data.
+             * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
+             * a large 32-bit integer with any alignment.
+             */
+        pchMessageStart[0] = PCHMESSAGESTART0;
+        pchMessageStart[1] = PCHMESSAGESTART1;
+        pchMessageStart[2] = PCHMESSAGESTART2;
+        pchMessageStart[3] = PCHMESSAGESTART3;
+        nDefaultPort = 19333;
+        nPruneAfterHeight = 100000;
+        m_assumed_blockchain_size = 0;
+        m_assumed_chain_state_size = 0;
+
+        const char* pszTimestamp = TIMESTAMP;
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, TIME, NONCE, 0x1d00ffff, 1, BLOCKREWARD * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock == uint256S(GENESISHASH));
+        assert(genesis.hashMerkleRoot == uint256S(MERKLEHASH));
+
+        vFixedSeeds.clear(); // The launch of microcurrencies don't have any fixed seeds.
+        vSeeds.clear();
+        vSeeds.emplace_back("dummySeed.invalid.");
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, microcurrencies will use BECH32 only.
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, microcurrencies will use BECH32 only.
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128);  
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+
+        bech32_hrp = BECH32HRP;
+
+        fDefaultConsistencyChecks = false;
+        fRequireStandard = true;
+        m_is_test_chain = false;
+        m_is_mockable_chain = false;
+
+        checkpointData = {
+            {}};
+
+        m_assumeutxo_data = MapAssumeutxo{
+            // TODO to be specified in a future patch.
+        };
+
+        chainTxData = ChainTxData{
+            // Data from RPC: getchaintxstats 4096 $BLOCK_HASH
+            /* nTime    */ 0,
+            /* nTxCount */ 0,
+            /* dTxRate  */ 0,
+        };
+    }
+};
+
 static void MaybeUpdateHeights(const ArgsManager& args, Consensus::Params& consensus)
 {
     for (const std::string& arg : args.GetArgs("-testactivationheight")) {
@@ -573,6 +666,8 @@ std::unique_ptr<const CChainParams> CreateChainParams(const ArgsManager& args, c
         return std::unique_ptr<CChainParams>(new SigNetParams(args));
     } else if (chain == CBaseChainParams::REGTEST) {
         return std::unique_ptr<CChainParams>(new CRegTestParams(args));
+    } else if (chain == CBaseChainParams::MICRO) {
+        return std::unique_ptr<CChainParams>(new CMicroParams());
     }
     throw std::runtime_error(strprintf("%s: Unknown chain %s.", __func__, chain));
 }

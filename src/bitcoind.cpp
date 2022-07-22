@@ -138,6 +138,11 @@ static bool AppInit(NodeContext& node, int argc, char* argv[])
         return true;
     }
 
+#ifdef MICROCURRENCY // If compiled for a microcurrency then it must run that microcurrency!
+    if (args.GetArg("-chain", "") != "micro" && !args.IsArgSet("-micro"))
+        return InitError(Untranslated(strprintf("Command line argument missing for \"%s\" microcurrency!\n       Run bitcoind with -micro or -chain=micro", MICROCURRENCY)));
+#endif // MICROCURRENCY
+    
 #if HAVE_DECL_FORK
     // Communication with parent after daemonizing. This is used for signalling in the following ways:
     // - a boolean token is sent when the initialization process (all the Init* functions) have finished to indicate
