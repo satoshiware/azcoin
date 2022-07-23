@@ -25,8 +25,8 @@ apt-get -y install libsqlite3-dev
 #Download Bitcoin
 apt-get -y install git-core
 rm -rf ~/bitcoin
-git clone https://github.com/satoshiware/bitcoin ~/bitcoin
-cd ~/bitcoin
+git clone https://github.com/satoshiware/bitcoin ./bitcoin
+cd bitcoin
 
 #Select Desired Branch
 if [ $# -eq 1 ] ; then #Check if one command line parameter (branch selection) was supplied
@@ -113,7 +113,7 @@ else
 fi
 
 #Compile /w All Available Cores & Install
-cd ~/bitcoin
+#cd ./bitcoin
 ./autogen.sh
 ./configure --without-bdb --with-gui=no $options
 make clean
