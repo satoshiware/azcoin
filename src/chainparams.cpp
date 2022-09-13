@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chainparams.h>
-#include <micros/micro.h>
+#include <micro.h>
 
 #include <chainparamsseeds.h>
 #include <consensus/merkle.h>

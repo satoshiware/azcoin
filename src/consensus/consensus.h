@@ -6,7 +6,7 @@
 #ifndef BITCOIN_CONSENSUS_CONSENSUS_H
 #define BITCOIN_CONSENSUS_CONSENSUS_H
 
-#include <micros/micro.h>
+#include <micro.h>
 #include <stdlib.h>
 #include <stdint.h>
 

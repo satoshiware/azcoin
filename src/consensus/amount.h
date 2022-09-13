@@ -6,7 +6,7 @@
 #ifndef BITCOIN_CONSENSUS_AMOUNT_H
 #define BITCOIN_CONSENSUS_AMOUNT_H
 
-#include <micros/micro.h>
+#include <micro.h>
 #include <cstdint>
 
 /** Amount in satoshis (Can be negative) */
