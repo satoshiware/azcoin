@@ -1,30 +1,32 @@
 /* Description:
-		Critical Constants that define good ol' bitcoin.
+		First microcurrency! Launched and distributed within Arizona, a southwestern U.S. state.
 */
 
-#ifndef BITCOIN_MICROS_MICRO_BITCOIN_H
-#define BITCOIN_MICROS_MICRO_BITCOIN_H
+#ifndef BITCOIN_MICROS_MICRO_AZMONEY_H
+#define BITCOIN_MICROS_MICRO_AZMONEY_H
 
-//#define MICROCURRENCY           "bitcoin" // Leave undefined for bitcoin!
-#define BECH32HRP           "bc"
+#define MICROCURRENCY       "azmoney"
+#define BECH32HRP           "az"
 
-#define BLOCKREWARD         50          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
-#define MAXSUPPLY           21000000    // Bitcoin's Max Supply = 21000000
+#define BLOCKREWARD         15          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
+#define MAXSUPPLY           7637625    	// Bitcoin's Max Supply = 21000000
 
-#define TIMESTAMP           "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
-#define TIME                1231006505
-#define NONCE               2083236893
+#define HALVINGINTERVAL		262800      // Bitcoin's Subsidy Halving Interval = 210000
 
-#define MERKLEHASH          "0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
-#define GENESISHASH         "0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+#define TIMESTAMP           "AZ Republic Jun/17/2022 Diamondbacks use long ball, small ball to thmp Twins in series open"
+#define TIME                1655529249
+#define NONCE               2444673783
+
+#define MERKLEHASH          "0x0ead7f4713c1dd6a0ac5a824ef8c1282b003fe2e1d1b8a3ffd33296cd6a5983c"
+#define GENESISHASH         "0x0000000056c6bab86aa8ec21a78667e5b830165b7cb48970790acc0e5681271b"
 
 // Magic bytes used to identify the communications within this microcurrency community.
-#define PCHMESSAGESTART0    0xf9
-#define PCHMESSAGESTART1    0xbe
-#define PCHMESSAGESTART2    0xb4
-#define PCHMESSAGESTART3    0xd9
-		
-// Common to all micros
-#define MAXBLOCKSIZE		4000000		// Bitcoin's Max Block Size = 4000000
+#define PCHMESSAGESTART0    0x81
+#define PCHMESSAGESTART1    0x9e
+#define PCHMESSAGESTART2    0x85
+#define PCHMESSAGESTART3    0x1c
 
-#endif // BITCOIN_MICROS_MICRO_BITCOIN_H
+// Common to all micros
+#define MAXBLOCKSIZE 		100000		// Bitcoin's Max Block Size = 4000000
+
+#endif // BITCOIN_MICROS_MICRO_AZCOIN_H

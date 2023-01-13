@@ -1,16 +1,17 @@
 /* Description:
-		First microcurrency for experimentation! It's useless beyond research and development,
-		yet great for testing new "micro" code.
+		First microcurrency! Launched and distributed within Arizona, a southwestern U.S. state.
 */
 
-#ifndef BITCOIN_MICROS_MICRO_TESTN_H
-#define BITCOIN_MICROS_MICRO_TESTN_H
+#ifndef BITCOIN_MICROS_MICRO_AZMONEY_H
+#define BITCOIN_MICROS_MICRO_AZMONEY_H
 
-#define MICROCURRENCY       "testn"
-#define BECH32HRP           "tstn"
+#define MICROCURRENCY       "azmoney"
+#define BECH32HRP           "az"
 
-#define BLOCKREWARD         32          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
-#define MAXSUPPLY           13440000    // Bitcoin's Max Supply = 21000000
+#define BLOCKREWARD         15          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
+#define MAXSUPPLY           7637625    	// Bitcoin's Max Supply = 21000000
+
+#define HALVINGINTERVAL		262800      // Bitcoin's Subsidy Halving Interval = 210000
 
 #define TIMESTAMP           "AZ Republic Jun/17/2022 Diamondbacks use long ball, small ball to thmp Twins in series open"
 #define TIME                1655529249
@@ -26,6 +27,6 @@
 #define PCHMESSAGESTART3    0x1c
 
 // Common to all micros
-#define MAXBLOCKSIZE		96000		// Bitcoin's Max Block Size = 4000000
+#define MAXBLOCKSIZE 		100000		// Bitcoin's Max Block Size = 4000000
 
-#endif // BITCOIN_MICROS_MICRO_TESTN_H
+#endif // BITCOIN_MICROS_MICRO_AZCOIN_H

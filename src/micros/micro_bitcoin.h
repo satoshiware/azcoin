@@ -11,6 +11,8 @@
 #define BLOCKREWARD         50          // Bitcoin's Block Reward = 50. Note: to run tests, it must be 50!
 #define MAXSUPPLY           21000000    // Bitcoin's Max Supply = 21000000
 
+#define HALVINGINTERVAL		210000      // Bitcoin's Subsidy Halving Interval = 210000
+
 #define TIMESTAMP           "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 #define TIME                1231006505
 #define NONCE               2083236893
