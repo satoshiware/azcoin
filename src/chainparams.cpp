@@ -509,7 +509,7 @@ public:
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 2 * 24 * 60 * 60; // Two Days
-        consensus.nPowTargetSpacing = 2 * 60;            // Two Minute
+        consensus.nPowTargetSpacing = 2 * 60;            // Two Minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1815; // 90% of 2016
