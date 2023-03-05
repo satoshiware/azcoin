@@ -21,12 +21,6 @@ sudo apt-get -y upgrade
 ###Install Essential Tools
 sudo apt-get -y install build-essential libtool autotools-dev automake pkg-config bsdmainutils curl zip
 
-###Install The Required Dependencies
-sudo apt-get -y install libevent-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-test-dev
-
-###Install The Optional Dependencies
-sudo apt-get -y install libzmq3-dev libminiupnpc-dev libnatpmp-dev systemtap-sdt-dev
-
 ###Install SQLite (Required For The Descriptor Wallet)
 sudo apt-get -y install libsqlite3-dev
 
@@ -47,14 +41,14 @@ sudo apt -y install g++-mingw-w64-x86-64-posix #Windows x86 64-bit
 ###Prepare the Cross Compiler for "x86 64 Bit"
 cd ./bitcoin/depends
 sudo make clean
-sudo make HOST=x86_64-pc-linux-gnu NO_QT=1 NO_BDB=1 NO_UPNP=1 NO_NATPMP=1 -j $(($(nproc)+1)) #x86 64-bit
+sudo make HOST=x86_64-pc-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
 
 ###Make Configuration
 cd ..
 ./autogen.sh # Make sure Bash's current working directory is the bitcoin directory
 
 ### Select Configuration for "x86 64 Bit"
-CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure --without-bdb --with-gui=no --disable-lto --disable-debug --disable-gprof --disable-werror --disable-zmq --with-miniupnpc=no --with-natpmp=no --enable-usdt=no
+CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure
 
 ###Compile /w All Available Cores & Install
 make clean
@@ -74,14 +68,14 @@ tar -czvf ./bin/bitcoin-x86_64-linux-gnu.tar.gz ./bitcoin-install #x86 64-Bit
 ###Prepare the Cross Compiler for "ARM 32 Bit"
 cd ./depends
 sudo make clean
-sudo make HOST=arm-linux-gnueabihf NO_QT=1 NO_BDB=1 NO_UPNP=1 NO_NATPMP=1 -j $(($(nproc)+1)) #ARM 32-bit
+sudo make HOST=arm-linux-gnueabihf NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 32-bit
 
 ###Make Configuration
 cd ..
 ./autogen.sh # Make sure Bash's current working directory is the bitcoin directory
 
 ### Select Configuration for "ARM 32 Bit"
-CONFIG_SITE=$PWD/depends/arm-linux-gnueabihf/share/config.site ./configure --without-bdb --with-gui=no --disable-lto --disable-debug --disable-gprof --disable-werror --disable-zmq --with-miniupnpc=no --with-natpmp=no --enable-usdt=no
+CONFIG_SITE=$PWD/depends/arm-linux-gnueabihf/share/config.site ./configure
 
 ###Compile /w All Available Cores & Install
 make clean
@@ -101,14 +95,14 @@ tar -czvf ./bin/bitcoin-arm-linux-gnueabihf.tar.gz ./bitcoin-install #ARM 32-Bit
 ###Prepare the Cross Compiler for "ARM 64 Bit"
 cd ./depends
 sudo make clean
-sudo make HOST=aarch64-linux-gnu NO_QT=1 NO_BDB=1 NO_UPNP=1 NO_NATPMP=1 -j $(($(nproc)+1)) #ARM 64-bit
+sudo make HOST=aarch64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 64-bit
 
 ###Make Configuration
 cd ..
 ./autogen.sh # Make sure Bash's current working directory is the bitcoin directory
 
 ### Select Configuration for "ARM 64 Bit"
-CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure --without-bdb --with-gui=no --disable-lto --disable-debug --disable-gprof --disable-werror --disable-zmq --with-miniupnpc=no --with-natpmp=no --enable-usdt=no
+CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure
 
 ###Compile /w All Available Cores & Install
 make clean
@@ -128,15 +122,14 @@ tar -czvf ./bin/bitcoin-aarch64-linux-gnu.tar.gz ./bitcoin-install #ARM 64-Bit
 ###Prepare the Cross Compiler for "Windows x86 64 Bit"
 cd ./depends
 sudo make clean
-sudo make HOST=x86_64-w64-mingw32 NO_QT=1 NO_BDB=1 NO_UPNP=1 NO_NATPMP=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
+sudo make HOST=x86_64-w64-mingw32 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
 
 ###Make Configuration
 cd ..
 ./autogen.sh # Make sure Bash's current working directory is the bitcoin directory
 
 ### Select Configuration for "Windows x86 64 Bit"
-CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --without-bdb --with-gui=no --disable-lto --disable-debug --disable-gprof --disable-werror --disable-zmq --with-miniupnpc=no --with-natpmp=no --enable-usdt=no
-
+CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure
 ###Compile /w All Available Cores & Install
 make clean
 make -j $(($(nproc)+1))
