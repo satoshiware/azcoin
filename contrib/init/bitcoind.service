@@ -26,8 +26,9 @@ ExecStart=/usr/bin/bitcoind -micro \
 
 ExecStop=/usr/bin/bitcoin-cli -micro \
                               -conf=/etc/bitcoin.conf \
-                              -datadir=/var/lib/bitcoin
-                            
+                              -datadir=/var/lib/bitcoin \
+                              stop
+
 # Make sure the config directory is readable by the service user
 PermissionsStartOnly=true
 ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin.conf
