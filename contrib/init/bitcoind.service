@@ -37,7 +37,8 @@ ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin
 
 Type=forking
 PIDFile=/run/bitcoind/bitcoind.pid
-Restart=on-failure
+Restart=always
+RestartSec=30
 TimeoutStartSec=infinity
 TimeoutStopSec=600
 
