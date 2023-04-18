@@ -21,22 +21,22 @@ Wants=network-online.target
 ExecStart=/usr/bin/bitcoind -micro \
                             -daemonwait \
                             -pid=/run/bitcoin/bitcoind.pid \
-                            -conf=/etc/bitcoin/bitcoin.conf \
+                            -conf=/etc/bitcoin.conf \
                             -datadir=/var/lib/bitcoin
 
 ExecStop=/usr/bin/bitcoin-cli -micro \
-                              -conf=/etc/bitcoin/bitcoin.conf \
+                              -conf=/etc/bitcoin.conf \
                               -datadir=/var/lib/bitcoin
                             
 # Make sure the config directory is readable by the service user
 PermissionsStartOnly=true
-ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin
+ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin.conf
 
 # Process management
 ####################
 
 Type=forking
-PIDFile=/run/bitcoind/bitcoind.pid
+PIDFile=/run/bitcoin/bitcoind.pid
 Restart=always
 RestartSec=30
 TimeoutStartSec=infinity
@@ -52,10 +52,6 @@ Group=bitcoin
 # /run/bitcoin
 RuntimeDirectory=bitcoin
 RuntimeDirectoryMode=0710
-
-# /etc/bitcoin
-ConfigurationDirectory=bitcoin
-ConfigurationDirectoryMode=0710
 
 # /var/lib/bitcoin
 StateDirectory=bitcoin
