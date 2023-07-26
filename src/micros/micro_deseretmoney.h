@@ -14,7 +14,9 @@
 #define HALVINGINTERVAL     262800      // Bitcoin's Subsidy Halving Interval = 210000
 
 #define TIMESTAMP           "BTC BLK: 000000000000000000050c443844cd8f5418afcf98d6919f8c4a3fa16422219b TXID: 5043ea3b..."
+#define PUBKEYSCRIPT		"04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"
 #define TIME                1690242443
+#define DBITS               0x1c00ff00
 #define NONCE               1960094637
 
 #define MERKLEHASH          "0xf19430c99d84d77f07c9183c802b147ed9e183840e0df93d3d51c9948b7ed076"

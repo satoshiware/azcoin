@@ -14,7 +14,9 @@
 #define HALVINGINTERVAL		210000      // Bitcoin's Subsidy Halving Interval = 210000
 
 #define TIMESTAMP           "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+#define PUBKEYSCRIPT		"04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"
 #define TIME                1231006505
+#define DBITS               0x1d00ffff
 #define NONCE               2083236893
 
 #define MERKLEHASH          "0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
