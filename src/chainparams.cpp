@@ -552,6 +552,12 @@ public:
         vFixedSeeds.clear(); // The launch of microcurrencies don't have any fixed seeds.
         vSeeds.clear();
         vSeeds.emplace_back("dummySeed.invalid.");
+        /*********** Update Note: Made this change to allow outbound connections  ************/
+        /*These need to be updated to the correct seeds for the microchain:
+        vSeeds.emplace_back("seed1.azcoin.net.");
+        -vSeeds.emplace_back("seed2.azcoin.net.");
+        -vSeeds.emplace_back("seed3.azcoin.net.");
+        */
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, microcurrencies will use BECH32 only.
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, microcurrencies will use BECH32 only.
