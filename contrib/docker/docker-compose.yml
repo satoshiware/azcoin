@@ -1,0 +1,70 @@
+services:
+  seed:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/Dockerfile
+    container_name: azcoin-seed
+    command:
+      - "-chain=micro"
+      - "-listen=1"
+      - "-dnsseed=0"
+      - "-rpcbind=0.0.0.0"
+      - "-rpcallowip=0.0.0.0/0"
+      - "-rpcuser=azcoin"
+      - "-rpcpassword=azcoin"
+    ports:
+      - "19333:19333"   # P2P (host -> container)
+      - "19332:19332"   # RPC (host -> container)  <-- update if your RPC port differs
+    volumes:
+      - seed-data:/data
+    networks:
+      - azcoin-net
+
+  peer1:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/Dockerfile
+    container_name: azcoin-peer1
+    command:
+      - "-chain=micro"
+      - "-listen=1"
+      - "-addnode=seed:19333"
+      - "-rpcbind=0.0.0.0"
+      - "-rpcallowip=0.0.0.0/0"
+      - "-rpcuser=azcoin"
+      - "-rpcpassword=azcoin"
+    volumes:
+      - peer1-data:/data
+    depends_on:
+      - seed
+    networks:
+      - azcoin-net
+
+  peer2:
+    build:
+      context: ../..
+      dockerfile: contrib/docker/Dockerfile
+    container_name: azcoin-peer2
+    command:
+      - "-chain=micro"
+      - "-listen=1"
+      - "-addnode=seed:19333"
+      - "-rpcbind=0.0.0.0"
+      - "-rpcallowip=0.0.0.0/0"
+      - "-rpcuser=azcoin"
+      - "-rpcpassword=azcoin"
+    volumes:
+      - peer2-data:/data
+    depends_on:
+      - seed
+    networks:
+      - azcoin-net
+
+networks:
+  azcoin-net:
+    driver: bridge
+
+volumes:
+  seed-data:
+  peer1-data:
+  peer2-data:
