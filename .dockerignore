@@ -1,0 +1,21 @@
+.git
+**/.git
+
+# depends build artifacts (these should NOT be in build context)
+depends/work
+depends/built
+depends/sources
+depends/sdk-sources
+depends/SDKs
+depends/cache
+
+# common junk
+**/node_modules
+**/dist
+**/build
+**/.cache
+**/*.log
+**/*.tmp
+**/*.zip
+**/*.tar
+**/*.tar.gz

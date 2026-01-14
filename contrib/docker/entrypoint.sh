@@ -1,36 +1,60 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This entrypoint:
-# - Ensures /data exists and is writable
-# - Drops privileges to non-root
-# - Starts azcoind (or bitcoind) with sane defaults
-#
-# TODO: Confirm daemon binary name: azcoind vs bitcoind
+DATADIR="${AZCOIN_DATA:-/data}"
+CONF="${CONF:-${DATADIR}/azcoin.conf}"
 
-DAEMON_BIN="${DAEMON_BIN:-azcoind}"
-DATA_DIR="${AZCOIN_DATA:-/data}"
+P2P_PORT="${P2P_PORT:-19333}"
+RPC_PORT="${RPC_PORT:-19332}"
 
-# Create datadir if missing
-mkdir -p "$DATA_DIR"
-chown -R azcoin:azcoin "$DATA_DIR" || true
+RPC_USER="${RPC_USER:-azrpc}"
+RPC_PASSWORD="${RPC_PASSWORD:-azrpcpass}"
 
-# Default flags (override by passing args to docker run)
-DEFAULT_ARGS=(
-  "-datadir=${DATA_DIR}"
-  "-printtoconsole"
-  "-server=1"
-)
+# Pick ONE chain selector:
+#   CHAIN=micro   -> uses -chain=micro -micro=<name>
+#   CHAIN=regtest -> uses -regtest
+#   CHAIN=testnet -> uses -testnet
+#   CHAIN=signet  -> uses -signet
+#   CHAIN=main    -> uses nothing
+CHAIN="${CHAIN:-micro}"
 
-# If user passed an explicit command like "bash", honor it.
-if [[ "${1:-}" == "bash" || "${1:-}" == "sh" ]]; then
-  exec "$@"
+MICRO="${MICRO:-azcoin}"
+DAEMON="${DAEMON:-bitcoind}"
+
+mkdir -p "${DATADIR}"
+
+# Create a minimal conf if missing
+if [ ! -f "${CONF}" ]; then
+  cat > "${CONF}" <<EOF
+server=1
+txindex=1
+printtoconsole=1
+
+[micro]
+rpcuser=${RPC_USER}
+rpcpassword=${RPC_PASSWORD}
+rpcbind=0.0.0.0
+rpcallowip=0.0.0.0/0
+
+port=${P2P_PORT}
+rpcport=${RPC_PORT}
+EOF
 fi
 
-# If first arg looks like a flag, run daemon with flags
-if [[ "${1:-}" == -* ]]; then
-  exec gosu azcoin "${DAEMON_BIN}" "${DEFAULT_ARGS[@]}" "$@"
-fi
+chain_args=()
+case "${CHAIN}" in
+  micro)   chain_args=(-chain=micro -micro="${MICRO}") ;;
+  regtest) chain_args=(-regtest) ;;
+  testnet) chain_args=(-testnet) ;;
+  signet)  chain_args=(-signet) ;;
+  main|mainnet|"") chain_args=() ;;
+  *) echo "Unknown CHAIN=${CHAIN} (use micro|regtest|testnet|signet|main)"; exit 1 ;;
+esac
 
-# Otherwise assume they passed a full command
-exec "$@"
+exec "${DAEMON}" \
+  -chain=micro \
+  -micro="${MICRO}" \
+  -datadir="${DATADIR}" \
+  -conf="${CONF}" \
+  -printtoconsole \
+  "$@"

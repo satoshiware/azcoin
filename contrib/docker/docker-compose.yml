@@ -1,70 +1,47 @@
+x-common: &common
+  image: azcoin-node:dev
+  environment:
+    environment:
+    AZCOIN_DATA: /data
+    MICRO: azcoin
+    P2P_PORT: 19333
+    RPC_PORT: 19332
+    RPC_USER: azrpc
+    RPC_PASSWORD: azrpcpass
+
 services:
   seed:
+    <<: *common
     build:
       context: ../..
       dockerfile: contrib/docker/Dockerfile
+      args:
+        MICRO: azcoin
     container_name: azcoin-seed
-    command:
-      - "-chain=micro"
-      - "-listen=1"
-      - "-dnsseed=0"
-      - "-rpcbind=0.0.0.0"
-      - "-rpcallowip=0.0.0.0/0"
-      - "-rpcuser=azcoin"
-      - "-rpcpassword=azcoin"
     ports:
-      - "19333:19333"   # P2P (host -> container)
-      - "19332:19332"   # RPC (host -> container)  <-- update if your RPC port differs
+      - "19333:19333"
+      - "19332:19332"
     volumes:
-      - seed-data:/data
-    networks:
-      - azcoin-net
+      - seed_data:/data
+    command: ["-dnsseed=0", "-listen=1"]
 
   peer1:
-    build:
-      context: ../..
-      dockerfile: contrib/docker/Dockerfile
+    <<: *common
     container_name: azcoin-peer1
-    command:
-      - "-chain=micro"
-      - "-listen=1"
-      - "-addnode=seed:19333"
-      - "-rpcbind=0.0.0.0"
-      - "-rpcallowip=0.0.0.0/0"
-      - "-rpcuser=azcoin"
-      - "-rpcpassword=azcoin"
+    depends_on: [seed]
     volumes:
-      - peer1-data:/data
-    depends_on:
-      - seed
-    networks:
-      - azcoin-net
+      - peer1_data:/data
+    command: ["-dnsseed=0", "-listen=1", "-addnode=seed:19333"]
 
   peer2:
-    build:
-      context: ../..
-      dockerfile: contrib/docker/Dockerfile
+    <<: *common
     container_name: azcoin-peer2
-    command:
-      - "-chain=micro"
-      - "-listen=1"
-      - "-addnode=seed:19333"
-      - "-rpcbind=0.0.0.0"
-      - "-rpcallowip=0.0.0.0/0"
-      - "-rpcuser=azcoin"
-      - "-rpcpassword=azcoin"
+    depends_on: [seed]
     volumes:
-      - peer2-data:/data
-    depends_on:
-      - seed
-    networks:
-      - azcoin-net
-
-networks:
-  azcoin-net:
-    driver: bridge
+      - peer2_data:/data
+    command: ["-dnsseed=0", "-listen=1", "-addnode=seed:19333"]
 
 volumes:
-  seed-data:
-  peer1-data:
-  peer2-data:
+  seed_data:
+  peer1_data:
+  peer2_data:
