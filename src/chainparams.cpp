@@ -551,12 +551,8 @@ public:
 
         vFixedSeeds.clear(); // The launch of microcurrencies don't have any fixed seeds.
         vSeeds.clear();
-        vSeeds.emplace_back("dummySeed.invalid.");
-        /*********** Update Note: Made this change to allow outbound connections  ************/
-       
+        // DNS seed(s) for AZCoin micro network (hostname[:port]; port defaults to nDefaultPort).
         vSeeds.emplace_back("azcoin_node1.satoshiware.org");
-        vSeeds.emplace_back("azcoin_node2.satoshiware.org");
-        vSeeds.emplace_back("azcoin_node3.satoshiware.org");
 
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, microcurrencies will use BECH32 only.
