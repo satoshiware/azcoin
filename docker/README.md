@@ -13,13 +13,13 @@ This folder is for **running AZCoin nodes in production** using a **prebuilt ima
 ## Files
 
 - `docker-compose.yml` — single-node compose (pulls `AZCOIN_IMAGE`)
-- `.\.env\.example` — copy to `.env` and edit
+- `env.example` — copy to `.env` and edit
 
 ## Usage (per machine)
 
 ```bash
 cd docker
-cp .\.env\.example .env
+cp .\env.example .env
 # edit .env
 docker compose pull
 docker compose up -d
