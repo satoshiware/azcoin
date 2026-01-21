@@ -13,12 +13,13 @@ services:
       P2P_PORT: ${P2P_PORT:-19333}
       RPC_PORT: ${RPC_PORT:-19332}
       RPC_USER: ${RPC_USER:-azrpc}
-      RPC_PASSWORD: ${RPC_PASSWORD:-change_me}
+      RPC_PASSWORD: ${RPC_PASSWORD:-azrpcpass}
+
       # optional bootstrap controls (entrypoint will translate these into -seednode / -connect)
-      SEEDNODE_HOST: ${SEEDNODE_HOST:-}
-      SEEDNODE_PORT: ${SEEDNODE_PORT:-}
-      CONNECT_TO: ${CONNECT_TO:-}
-      ADDNODE: ${ADDNODE:-}
+      SEEDNODE_HOST: ${SEEDNODE_HOST:-azcoin_node1.satoshiware.org}
+      SEEDNODE_PORT: ${SEEDNODE_PORT:-19333}
+      CONNECT_TO: ${CONNECT_TO:-azcoin_node1.satoshiware.org:19333}
+      ADDNODE: ${ADDNODE:-node1.azcoin.com:19333}
 
     volumes:
       - azcoin_data:${AZCOIN_DATA:-/data}
@@ -28,7 +29,7 @@ services:
       - "${P2P_PORT:-19333}:${P2P_PORT:-19333}"
       # RPC is intentionally NOT published publicly.
       # If you want local host RPC access, uncomment:
-      # - "127.0.0.1:${RPC_PORT:-19332}:${RPC_PORT:-19332}"
+      #- "127.0.0.1:${RPC_PORT:-19332}:${RPC_PORT:-19332}"
 
     # Join an existing network (no Docker-only "seed" container)
     # Bootstrap/join behavior is controlled via env vars (so this file stays identical everywhere):
