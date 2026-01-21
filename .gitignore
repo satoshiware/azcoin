@@ -150,3 +150,7 @@ osx_volname
 dist/
 
 /guix-build-*
+
+# Local Docker Compose env files (do not commit secrets)
+.env
+docker/.env
