@@ -25,6 +25,14 @@ mkdir -p "${DATADIR}"
 
 # Create a minimal conf if missing
 if [ ! -f "${CONF}" ]; then
+  if [ -z "${RPC_PASSWORD}" ] || [ "${RPC_PASSWORD}" = "change_me" ] || [ "${RPC_PASSWORD}" = "azrpcpass" ]; then
+    if command -v openssl >/dev/null 2>&1; then
+      RPC_PASSWORD="$(openssl rand -base64 32)"
+    else
+      RPC_PASSWORD="$(head -c 48 /dev/urandom | base64)"
+    fi
+    echo "INFO: Generated unique RPC_PASSWORD for this node and wrote it to ${CONF}." >&2
+  fi
   cat > "${CONF}" <<EOF
 server=1
 txindex=1
