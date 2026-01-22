@@ -10,6 +10,12 @@ RPC_PORT="${RPC_PORT:-19332}"
 RPC_USER="${RPC_USER:-azrpc}"
 RPC_PASSWORD="${RPC_PASSWORD:-azrpcpass}"
 
+
+ln -sf /usr/local/bin/bitcoind /usr/local/bin/azcoind || true
+ln -sf /usr/local/bin/bitcoin-cli /usr/local/bin/azcoin-cli || true
+ln -sf /usr/local/bin/bitcoin-tx /usr/local/bin/azcoin-tx || true
+ln -sf /usr/local/bin/bitcoin-wallet /usr/local/bin/azcoin-wallet || true
+
 # Pick ONE chain selector:
 #   CHAIN=micro   -> uses -chain=micro -micro=<name>
 #   CHAIN=regtest -> uses -regtest
