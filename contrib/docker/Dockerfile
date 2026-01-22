@@ -116,9 +116,19 @@ EXPOSE 19333 19332
 # Copy installed binaries + libs
 COPY --from=builder /opt/stage/usr/local/ /usr/local/
 
+# ✅ Create friendly AZCoin binary names as root (this is the key)
+RUN set -eux; \
+  ln -sf /usr/local/bin/bitcoind        /usr/local/bin/azcoind; \
+  ln -sf /usr/local/bin/bitcoin-cli     /usr/local/bin/azcoin-cli; \
+  ln -sf /usr/local/bin/bitcoin-tx      /usr/local/bin/azcoin-tx; \
+  ln -sf /usr/local/bin/bitcoin-wallet  /usr/local/bin/azcoin-wallet
+
 # Entrypoint
 COPY contrib/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+COPY contrib/docker/azcoin-cli /usr/local/bin/azcoin-cli
+RUN chmod +x /usr/local/bin/azcoin-cli
 
 USER azcoin
 ENTRYPOINT ["/entrypoint.sh"]

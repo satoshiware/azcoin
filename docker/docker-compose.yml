@@ -31,14 +31,14 @@ services:
       # If you want local host RPC access, uncomment:
       #- "127.0.0.1:${RPC_PORT:-19332}:${RPC_PORT:-19332}"
 
-    # Join an existing network (no Docker-only "seed" container)
-    # Bootstrap/join behavior is controlled via env vars (so this file stays identical everywhere):
-    # - SEEDNODE_HOST / SEEDNODE_PORT: bootstrap peers from a known node (recommended)
-    # - CONNECT_TO: strict connect only to one node
     command:
       - "-listen=1"
       - "-dnsseed=1"
 
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
 volumes:
   azcoin_data:
-
