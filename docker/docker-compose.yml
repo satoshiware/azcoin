@@ -2,6 +2,9 @@ services:
   azcoin:
     # Prebuilt image (build once, run everywhere)
     image: ${AZCOIN_IMAGE}
+    build:
+      context: ..
+      dockerfile: contrib/docker/Dockerfile
     container_name: azcoin
     restart: unless-stopped
 
