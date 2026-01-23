@@ -4,12 +4,12 @@ services:
     image: ${AZCOIN_IMAGE}
     build:
       context: ..
-      dockerfile: contrib/docker/Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: azcoin
     restart: unless-stopped
 
     environment:
-      # consumed by contrib/docker/entrypoint.sh in the image
+      # consumed by docker/entrypoint.sh in the image
       AZCOIN_DATA: ${AZCOIN_DATA:-/data}
       CHAIN: ${CHAIN:-micro}
       MICRO: ${MICRO:-azcoin}
