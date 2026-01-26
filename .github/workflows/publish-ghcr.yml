@@ -45,6 +45,7 @@ jobs:
           tags: |
             type=raw,value=dev,enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_tag}}
             type=ref,event=tag
             type=sha,format=long
 
