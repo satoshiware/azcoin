@@ -31,8 +31,8 @@ services:
     ports:
       - "${P2P_PORT:-19333}:${P2P_PORT:-19333}"
       # RPC is intentionally NOT published publicly.
-      # If you want local host RPC access, uncomment:
-      #- "127.0.0.1:${RPC_PORT:-19332}:${RPC_PORT:-19332}"
+      # Local host RPC access (recommended). For remote RPC access, change 127.0.0.1 -> 0.0.0.0.
+      - "127.0.0.1:${RPC_PORT:-19332}:${RPC_PORT:-19332}"
 
     command:
       - "-listen=1"

@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: contrib/docker/Dockerfile
+          file: docker/Dockerfile
           push: true
           build-args: |
             MICRO=${{ github.event.inputs.micro || env.MICRO_DEFAULT }}
