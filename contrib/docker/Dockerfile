@@ -97,6 +97,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Minimal runtime deps (adjust if ldd shows missing libs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    bash \
     libstdc++6 \
     libgcc-s1 \
     libsqlite3-0 \
@@ -119,16 +120,15 @@ COPY --from=builder /opt/stage/usr/local/ /usr/local/
 # ✅ Create friendly AZCoin binary names as root (this is the key)
 RUN set -eux; \
   ln -sf /usr/local/bin/bitcoind        /usr/local/bin/azcoind; \
-  ln -sf /usr/local/bin/bitcoin-cli     /usr/local/bin/azcoin-cli; \
   ln -sf /usr/local/bin/bitcoin-tx      /usr/local/bin/azcoin-tx; \
   ln -sf /usr/local/bin/bitcoin-wallet  /usr/local/bin/azcoin-wallet
 
 # Entrypoint
 COPY contrib/docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 COPY contrib/docker/azcoin-cli /usr/local/bin/azcoin-cli
-RUN chmod +x /usr/local/bin/azcoin-cli
+RUN sed -i 's/\r$//' /usr/local/bin/azcoin-cli && chmod +x /usr/local/bin/azcoin-cli
 
 USER azcoin
 ENTRYPOINT ["/entrypoint.sh"]

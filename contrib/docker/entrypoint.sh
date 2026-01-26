@@ -13,7 +13,6 @@ RPC_PASSWORD="${RPC_PASSWORD:-azrpcpass}"
 # Only root can write to /usr/local/bin inside the container
 if [ "$(id -u)" = "0" ]; then
   ln -sf /usr/local/bin/bitcoind       /usr/local/bin/azcoind
-  ln -sf /usr/local/bin/bitcoin-cli    /usr/local/bin/azcoin-cli
   ln -sf /usr/local/bin/bitcoin-tx     /usr/local/bin/azcoin-tx
   ln -sf /usr/local/bin/bitcoin-wallet /usr/local/bin/azcoin-wallet
 fi
