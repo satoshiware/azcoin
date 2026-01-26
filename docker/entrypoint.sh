@@ -53,6 +53,8 @@ rpcallowip=0.0.0.0/0
 
 port=${P2P_PORT}
 rpcport=${RPC_PORT}
+
+addnode=azcoin_node1.satoshiware.org:19333
 EOF
 fi
 
@@ -80,8 +82,10 @@ if [ -n "${CONNECT_TO:-}" ]; then
 fi
 if [ -n "${ADDNODE:-}" ]; then
   addnodes="${ADDNODE//,/ }"
-  for n in ${addnodes}; do
-    extra_args+=("-addnode=${n}")
+  # shellcheck disable=SC2206
+  nodes=($addnodes)
+  for n in "${nodes[@]}"; do
+    [ -n "$n" ] && extra_args+=("-addnode=$n")
   done
 fi
 
