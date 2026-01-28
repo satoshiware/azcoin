@@ -27,6 +27,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+
+      # REQUIRED for multi-arch builds
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -65,5 +68,8 @@ jobs:
             MICRO=${{ github.event.inputs.micro || env.MICRO_DEFAULT }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+          # Strongly recommended to avoid "unknown/unknown" attestation manifests
+
           provenance: false
           sbom: false
