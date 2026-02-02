@@ -8,6 +8,10 @@
      changing the max supply to 7884000
 - Added seeds for the microchain
 
+## Version 0.1.2
+
+- (TBD)
+
 ## Version 0.1.1
 
 
