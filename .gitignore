@@ -154,3 +154,6 @@ dist/
 # Local Docker Compose env files (do not commit secrets)
 .env
 docker/.env
+# large artifacts
+azcoin.bundle
+*.bundle
