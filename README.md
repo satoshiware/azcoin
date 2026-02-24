@@ -75,7 +75,7 @@ pull requests—this is security-critical software where mistakes can cost real 
 ### Automated Testing
 
 Developers are strongly encouraged to write [unit tests](src/test/README.md) for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run
+submit new unit tests for old code. Unit tgests can be compiled and run
 (assuming they weren't disabled in configure) with: `make check`.
 
 Further details on running and extending unit tests can be found in

@@ -2,8 +2,8 @@
 		First microcurrency! Launched and distributed within U.S.A. !
 */
 
-#ifndef BITCOIN_MICROS_MICRO_AZMONEY_H
-#define BITCOIN_MICROS_MICRO_AZMONEY_H
+#ifndef BITCOIN_MICROS_MICRO_AZCOIN_H
+#define BITCOIN_MICROS_MICRO_AZCOIN_H
 
 #define MICROCURRENCY       "azcoin"
 #define BECH32HRP           "az"

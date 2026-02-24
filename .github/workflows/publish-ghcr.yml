@@ -27,6 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # REQUIRED for multi-arch builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -40,6 +41,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Build tag list WITHOUT docker/metadata-action enable=... templates
       - name: Compute image tags
         id: tags
         shell: bash
@@ -52,30 +54,8 @@ jobs:
           REF_NAME="${GITHUB_REF_NAME}"
           SHA="${GITHUB_SHA}"
 
+          # Always publish a sha tag (full 40-char sha)
           TAGS="${IMAGE}:sha-${SHA}"
 
-          if [[ "${REF_TYPE}" == "tag" ]]; then
-            TAGS="${TAGS}"$'\n'"${IMAGE}:${REF_NAME}"
-          fi
-
-          if [[ "${REF_TYPE}" == "branch" && "${REF_NAME}" == "${DEFAULT_BRANCH}" ]]; then
-            TAGS="${TAGS}"$'\n'"${IMAGE}:dev"
-            TAGS="${TAGS}"$'\n'"${IMAGE}:latest"
-          fi
-
-          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
-          echo "${TAGS}" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-      - name: Build and push (multi-arch)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          build-args: |
-            MICRO=${{ github.event.inputs.micro || env.MICRO_DEFAULT }}
-          tags: ${{ steps.tags.outputs.tags }}
-          provenance: false
-          sbom: false
+          # If this run is for a git tag (v*), also publish that tag
+          if [[ "$]()]()
