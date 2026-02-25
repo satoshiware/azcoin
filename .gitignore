@@ -157,3 +157,7 @@ docker/.env
 # large artifacts
 azcoin.bundle
 *.bundle
+
+# large artifacts
+azcoin.bundle
+*.bundle
