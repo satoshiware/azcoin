@@ -1,0 +1,12 @@
+#pragma once
+/*
+  Microcurrency parameters are selected by including the appropriate header
+  from src/micros/.
+
+  IMPORTANT:
+  - Keep this file as a thin include wrapper.
+  - Do NOT hardcode genesis constants here.
+  - Switch the include to change the active microcurrency build.
+*/
+
+#include "micros/micro_azcoin.h"

@@ -13,7 +13,6 @@ src/bitcoin-wallet
 src/test/fuzz/fuzz
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
-
 # autoreconf
 Makefile.in
 aclocal.m4
@@ -42,21 +41,16 @@ src/config/stamp-h1
 src/obj
 share/setup.nsi
 share/qt/Info.plist
-
 src/univalue/gen
-
 src/qt/*.moc
 src/qt/moc_*.cpp
 src/qt/forms/ui_*.h
-
 src/qt/test/moc*.cpp
-
 src/qt/bitcoin-qt.config
 src/qt/bitcoin-qt.creator
 src/qt/bitcoin-qt.creator.user
 src/qt/bitcoin-qt.files
 src/qt/bitcoin-qt.includes
-
 .deps
 .dirstamp
 .libs
@@ -72,48 +66,37 @@ src/qt/bitcoin-qt.includes
 *.pb.cc
 *.pb.h
 *.dat
-
 *.log
 *.trs
 *.dmg
 *.iso
-
 *.json.h
 *.raw.h
-
 # Only ignore unexpected patches
 *.patch
 !contrib/guix/patches/*.patch
 !depends/patches/**/*.patch
-
 #libtool object files
 *.lo
 *.la
-
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
 !depends/Makefile
 src/qt/bitcoin-qt
 Bitcoin-Qt.app
-
 # Qt Creator
 Makefile.am.user
-
 # Unit-tests
 Makefile.test
 bitcoin-qt_test
-
 # Resources cpp
 qrc_*.cpp
-
 # Mac specific
 .DS_Store
 build
-
 # Previous releases
 releases
-
 #lcov
 *.gcno
 *.gcda
@@ -124,7 +107,6 @@ fuzz.coverage/
 coverage_percent.txt
 /cov_tool_wrapper.sh
 qa-assets/
-
 #build tests
 linux-coverage-build
 linux-build
@@ -132,21 +114,23 @@ win32-build
 test/config.ini
 test/cache/*
 test/.mypy_cache/
-
 !src/leveldb*/Makefile
-
 /doc/doxygen/
-
 libbitcoinconsensus.pc
 contrib/devtools/split-debug.sh
-
 # Output from running db4 installation
 db4/
-
 # clang-check
 *.plist
-
 osx_volname
 dist/
-
 /guix-build-*
+<<<<<<< HEAD
+=======
+# Local Docker Compose env files (do not commit secrets)
+.env
+docker/.env
+# large artifacts
+azcoin.bundle
+*.bundle
+>>>>>>> feature/docker-harden-and-azcoin-wrappers
