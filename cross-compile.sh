@@ -2,9 +2,46 @@
 set -euo pipefail
 
 ####################################################################################################
-# This file generates the binanries (and sha 256 checksums) for AZCoin Core
-# from the https://github.com/satoshiware/azcoin repository. This script was made for linux
-# x86 & ARM 64 bit and has been tested on Debian 13
+# AZCoin Core Multi-Platform Release Binary Builder Script
+#
+# This script automates the full process of building reproducible, cross-compiled binaries
+#
+# Main steps performed:
+#   1. Checks for root privileges (required for package installation)
+#   2. Updates system packages and installs essential build tools (git, cross-compilers, etc.)
+#   3. Clones the AZCoin repository and fetches all tags/branches
+#   4. Interactive prompt: lets the user select a specific branch tip, release tag, or commit hash
+#      → Stores the selected version in $SELECTED_VERSION (tag name if tag chosen, else short commit hash)
+#   5. Installs remaining native and cross-compile dependencies
+#   6. Cross-compiles AZCoin Core for three platforms using the depends/ system:
+#      - Linux x86_64 (native-like)
+#      - Linux aarch64 (ARM64)
+#      - Windows x86_64 (MinGW-w64)
+#   7. For each platform:
+#      - Runs autogen.sh → configure (with depends config.site) → make clean → make
+#      - Installs to a staging directory
+#      - Removes unnecessary files (benchmarks, tests, headers, libs, man pages)
+#      - Copies rpcauth helper scripts
+#      - Creates compressed archive:
+#        • tar.gz for Linux platforms
+#        • zip for Windows
+#      - Places archives in ./azcoin/bin/
+#   8. Generates SHA256SUMS file containing hashes of all produced archives
+#
+# Requirements:
+#   - Must be run as root (sudo) due to apt package installation
+#   - Tested on Debian 13 (Bookworm/Trixie) x86_64
+#   - Significant disk space and RAM recommended (cross-compilation is resource-intensive)
+#   - Internet access required for cloning and package downloads
+#   - The script uses aggressive parallel compilation (-j$(nproc)+1). Reduce if OOM occurs.
+#
+# Output:
+#   - All final binaries and checksums are placed in ./azcoin/bin/
+#     Example:
+#       azcoin-v0.1.2-x86_64-linux-gnu.tar.gz
+#       azcoin-v0.1.2-aarch64-linux-gnu.tar.gz
+#       azcoin-v0.1.2-win64.zip
+#       SHA256SUMS
 ####################################################################################################
 
 # ---------------------------------------------
@@ -64,27 +101,26 @@ while true; do
     echo "===================================================================="
     echo " Which version do you want to build from?"
     echo "===================================================================="
-    echo "  1) Branch tip     - Latest development code (may be unstable)"
-    echo "  2) Tag            - Fixed release point (recommended for stability)"
-    echo "  3) Commit hash    - Exact historical commit (advanced / reproduce bug)"
+    echo " 1) Branch tip     - Latest development code (may be unstable)"
+    echo " 2) Tag            - Fixed release point (recommended for stability)"
+    echo " 3) Commit hash    - Exact historical commit (advanced / reproduce bug)"
     echo ""
     echo " Most users should choose 2 (Tag) for a reliable, tested build."
     echo " Press Enter for default (latest tag / stable release)."
     echo "===================================================================="
     read -p "Enter 1, 2, 3, or just press Enter for latest tag: " choice
 
-    # Default to tags if empty
     if [ -z "$choice" ]; then
         choice="2"
     fi
 
     case "$choice" in
-        1)  # Branches
+        1)  # ── Branch ───────────────────────────────────────────────────────────────
             echo ""
             echo "Available branches (origin/*):"
             echo "------------------------------"
             mapfile -t branch_list < <(git branch -r | grep -v 'HEAD' | sed 's/^[[:space:]]*origin\///' | sort | uniq)
-            
+
             if [ ${#branch_list[@]} -eq 0 ]; then
                 echo "No branches found. Falling back to manual entry."
             else
@@ -93,7 +129,7 @@ while true; do
                 done
             fi
             echo ""
-            echo "Type a number, or enter the branch name directly (e.g. master, feature/docker-packaging)."
+            echo "Type a number, or enter the branch name directly (e.g. master)."
             read -p "Branch: " input
             selected="$input"
 
@@ -108,10 +144,14 @@ while true; do
             fi
 
             if git rev-parse --verify "origin/$selected" >/dev/null 2>&1; then
-                git checkout -B "$selected" "origin/$selected"  # -B to reset if exists
+                git checkout -B "$selected" "origin/$selected"
                 echo ""
                 echo "SUCCESS: Now tracking branch '$selected'"
                 git status --short --branch
+
+                SELECTED_VERSION=$(git rev-parse --short HEAD)
+                echo "Selected version (short commit hash): $SELECTED_VERSION"
+
                 break
             else
                 echo "Branch '$selected' not found. Try again."
@@ -119,25 +159,24 @@ while true; do
             fi
             ;;
 
-        2)  # Tags - last 24, newest first
+        2)  # ── Tag ─────────────────────────────────────────────────────────────────
             echo ""
             echo "Recent tags (newest creation date first - last 24):"
             echo "---------------------------------------------------"
             mapfile -t tag_list < <(git tag --sort=-creatordate | head -24)
-            
+
             if [ ${#tag_list[@]} -eq 0 ]; then
                 echo "No tags found."
             else
                 for i in "${!tag_list[@]}"; do
                     tag="${tag_list[i]}"
-                    # Show commit date + subject for context
                     desc=$(git log -1 --format="%ci %s" "$tag" 2>/dev/null | head -1 || echo "No description")
                     printf "  %2d) %-20s  %s\n" "$((i+1))" "$tag" "$desc"
                 done
             fi
             echo ""
             echo "Recommended: Pick a recent v0.1.x tag for stability."
-            echo "Type a number, or enter any tag name/hash directly (even if not listed)."
+            echo "Type a number, or enter any tag name/hash directly."
             read -p "Tag: " input
             selected="$input"
 
@@ -154,9 +193,17 @@ while true; do
             if git rev-parse --verify "refs/tags/$selected" >/dev/null 2>&1; then
                 git checkout "$selected"
                 echo ""
-                echo "SUCCESS: Checked out tag '$selected' (detached HEAD - stable release point)"
-                echo "Note: Detached HEAD is normal/safe here. To modify code later:"
-                echo "      git checkout -b my-changes"
+                echo "SUCCESS: Checked out tag '$selected' (detached HEAD)"
+                echo "Note: Detached HEAD is normal/safe here."
+
+                # ── Tag case: use the tag name directly ──
+                SELECTED_VERSION="$selected"
+                echo "Selected version (tag): $SELECTED_VERSION"
+
+                # Optional: show the underlying commit too
+                SHORT_COMMIT=$(git rev-parse --short HEAD)
+                echo "  (points to commit: $SHORT_COMMIT)"
+
                 git describe --tags --always
                 break
             else
@@ -165,12 +212,12 @@ while true; do
             fi
             ;;
 
-        3)  # Commits - last 24 on current branch/HEAD
+        3)  # ── Commit ──────────────────────────────────────────────────────────────
             echo ""
             echo "Recent commits (newest first - last 24):"
             echo "----------------------------------------"
             mapfile -t commit_list < <(git log -24 --format="%h %ci %s" --no-merges)
-            
+
             if [ ${#commit_list[@]} -eq 0 ]; then
                 echo "No commits found."
             else
@@ -179,7 +226,7 @@ while true; do
                 done
             fi
             echo ""
-            echo "Type a number, or paste any full/short commit hash directly."
+            echo "Type a number, or paste any commit hash."
             read -p "Commit: " input
             selected="$input"
 
@@ -197,21 +244,26 @@ while true; do
                 git checkout "$selected"
                 echo ""
                 echo "SUCCESS: Checked out commit '$selected' (detached HEAD)"
-                echo "Note: This is an exact historical point. Detached HEAD is normal."
+
+                SELECTED_VERSION=$(git rev-parse --short HEAD)
+                echo "Selected version (short commit hash): $SELECTED_VERSION"
+
                 git log -1 --oneline --decorate
                 break
             else
-                echo "Commit '$selected' not found or invalid hash. Try again."
+                echo "Commit '$selected' not found or invalid."
                 continue
             fi
             ;;
 
-        *) 
+        *)
             echo "Invalid choice. Please enter 1, 2, or 3 (or Enter for default)."
             continue
             ;;
     esac
 done
+echo ""
+echo "Selected version: $SELECTED_VERSION"
 
 # ---------------------------------------------
 # Install Essential Tools
@@ -232,14 +284,14 @@ touch ./bin/SHA256SUMS # Compressed Binary hashes are stored here
 
 # Info' for the User
 echo "Generated binaries and related files will be transfered to the \"./azcoin/bin\" directory."
-read -p "Press [Enter] key to continue..."
 
 ###################################### x86 64 Bit ##############################################
+echo "Ready to compile for linux (x86_64)"
+read -p "Press [Enter] key to continue..."
+
 # Prepare the Cross Compiler for "x86 64 Bit"
 cd ./depends
 make clean
-#make HOST=x86_64-pc-linux-gnu NO_TEST=1 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
-#make HOST=x86_64-pc-linux-gnu NO_TEST=1 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
 make HOST=x86_64-pc-linux-gnu NO_TEST=1 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
 
 # Make Configuration
@@ -258,89 +310,97 @@ make install DESTDIR=$PWD/mkinstall
 mv ./mkinstall/usr/local ./azcoin-install
 rm -rf ./mkinstall
 
-# Create Compressed Install Files in ./bin Directory <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< editing file structure <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-rm ./azcoin-install/bin/bench_bitcoin   ###<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< azcoin
-rm ./azcoin-install/bin/test_bitcoin   ###<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< azcoin
-rm -rf ./azcoin-install/include 
+# Customize azcoin-install files & directory structure
+rm ./azcoin-install/bin/bench_azcoin
+rm ./azcoin-install/bin/test_azcoin
+rm -rf ./azcoin-install/include
 rm -rf ./azcoin-install/lib
 rm -rf ./azcoin-install/share/man
 cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Compress Install Files for "x86 64 Bit"
-tar -czvf ./bin/azcoin-${m_name}-x86_64-linux-gnu.tar.gz ./azcoin-install #x86 64-Bit  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< let's put tag, or commit for m_name should work find <<<<<<<<<<<<<<<< Make it like bitcoin
+tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ./azcoin-install #x86 64-Bit
 rm -rf ./azcoin-install
 
 ###################################### ARM 64 Bit ##############################################
-###Prepare the Cross Compiler for "ARM 64 Bit"
-cd ./depends
-sudo make clean
-sudo make HOST=aarch64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 64-bit
+echo "Ready to compile for linux (ARM_64)"
+read -p "Press [Enter] key to continue..."
 
-###Make Configuration
+# Prepare the Cross Compiler for "ARM 64 Bit"
+cd ./depends
+make clean
+make HOST=aarch64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 64-bit
+
+# Make Configuration
 cd ..
 ./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-### Select Configuration for "ARM 64 Bit"
+# Select Configuration for "ARM 64 Bit"
 CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure
 
-###Compile /w All Available Cores & Install
+# Compile /w All Available Cores & Install
 make clean
 make -j $(($(nproc)+1))
 
-###Create Compressed Install Files in ./bin Directory
+# Create Compressed Install Files in ./bin Directory
 make install DESTDIR=$PWD/mkinstall
 mv ./mkinstall/usr/local ./azcoin-install
 rm -rf ./mkinstall
 
-###Compress Install Files for "ARM 64 Bit"
-tar -czvf ./bin/azcoin-${m_name}-aarch64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
+# Customize azcoin-install files & directory structure
+rm ./azcoin-install/bin/bench_azcoin
+rm ./azcoin-install/bin/test_azcoin
+rm -rf ./azcoin-install/include
+rm -rf ./azcoin-install/lib
+rm -rf ./azcoin-install/share/man
+cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+
+# Compress Install Files for "ARM 64 Bit"
+tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
 rm -rf ./azcoin-install
 
 ###################################### Windows x86 64 Bit ##############################################
-###Prepare the Cross Compiler for "Windows x86 64 Bit"
+echo "Ready to compile for Windows (x86_64)"
+read -p "Press [Enter] key to continue..."
+
+# Prepare the Cross Compiler for "Windows x86 64 Bit"
 cd ./depends
-sudo make clean
-sudo make HOST=x86_64-w64-mingw32 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_BOOST=1 NO_LIBEVENT=1 NO_ZMQ=1 NO_USDT=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
+make clean
+make HOST=x86_64-w64-mingw32 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
 
-###Make Configuration
+# Make Configuration
 cd ..
-./autogen.sh # Make sure Bash's current working directory is the bitcoin directory
+./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-### Select Configuration for "Windows x86 64 Bit"
+# Select Configuration for "Windows x86 64 Bit"
 CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure
-###Compile /w All Available Cores & Install
+
+# Compile /w All Available Cores & Install
 make clean
 make -j $(($(nproc)+1))
 
-###Create Compressed Install Files in ./bin Directory
+# Create Compressed Install Files in ./bin Directory
 rm -rf ./mkinstall
-rm -rf ./bitcoin-install
+rm -rf ./azcoin-install
 make install DESTDIR=$PWD/mkinstall
-mv ./mkinstall/usr/local ./bitcoin-install
-mkdir bin
+mv ./mkinstall/usr/local ./azcoin-install
 
-###Compress Install Files for "Windows x86 64 Bit"
-zip -ll -X -r ./bin/azcoin-${m_name}-bitcoin-win64.zip ./azcoin-install #Windows x86 64-bit
+# Customize azcoin-install files & directory structure
+rm ./azcoin-install/bin/bench_azcoin.exe
+rm ./azcoin-install/bin/test_azcoin.exe
+rm ./azcoin-install/bin/libbitcoinconsensus-0.dll
+rm -rf ./azcoin-install/include
+rm -rf ./azcoin-install/lib
+rm -rf ./azcoin-install/share/man
+cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-###################################### Calculate Hashes ##############################################
-sha256sum ./bin/azcoin-${m_name}-x86_64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
-sha256sum ./bin/azcoin-${m_name}-aarch64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
-sha256sum ./bin/azcoin-${m_name}-win64.zip >> ./bin/SHA256SUMS
+# Compress Install Files for "Windows x86 64 Bit"
+zip -ll -X -r ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip ./azcoin-install #Windows x86 64-bit
+rm -rf ./azcoin-install
 
-# Copy rpcauth python utility to ./bin folder
-cp ./share/rpcauth/rpcauth.py ./bin/rpcauth.py
+# ---------------------------------------------
+# Calculate Hashes
+# ---------------------------------------------
+sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
+sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
+sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip >> ./bin/SHA256SUMS
