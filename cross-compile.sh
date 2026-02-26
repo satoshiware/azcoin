@@ -311,8 +311,8 @@ mv ./mkinstall/usr/local ./azcoin-install
 rm -rf ./mkinstall
 
 # Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench_azcoin
-rm ./azcoin-install/bin/test_azcoin
+rm ./azcoin-install/bin/bench_*
+rm ./azcoin-install/bin/test_*
 rm -rf ./azcoin-install/include
 rm -rf ./azcoin-install/lib
 rm -rf ./azcoin-install/share/man
@@ -348,8 +348,8 @@ mv ./mkinstall/usr/local ./azcoin-install
 rm -rf ./mkinstall
 
 # Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench_azcoin
-rm ./azcoin-install/bin/test_azcoin
+rm ./azcoin-install/bin/bench*
+rm ./azcoin-install/bin/test*
 rm -rf ./azcoin-install/include
 rm -rf ./azcoin-install/lib
 rm -rf ./azcoin-install/share/man
@@ -386,8 +386,8 @@ make install DESTDIR=$PWD/mkinstall
 mv ./mkinstall/usr/local ./azcoin-install
 
 # Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench_azcoin.exe
-rm ./azcoin-install/bin/test_azcoin.exe
+rm ./azcoin-install/bin/bench*
+rm ./azcoin-install/bin/test*
 rm ./azcoin-install/bin/libbitcoinconsensus-0.dll
 rm -rf ./azcoin-install/include
 rm -rf ./azcoin-install/lib
