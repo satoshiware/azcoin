@@ -32,21 +32,19 @@ AZCoin Core is a full node implementation forked from Bitcoin Core v23.0 (commit
 - Proof-of-Existence: Original AZ Money whitepaper embedded in Bitcoin blockchain (TXID: `b5f53d6462f748de3bf17ef479b2855d1af67c90045f6ab6187062fb724f9c17`, block 776679, Feb 15, 2023).
 
 ## Genesis Block Details
-The genesis block embeds a proof-of-existence reference to the AZ Money whitepaper transaction:
-- **pszTimestamp** (embedded message):  
-  `BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9`
-  `TXID: b5f53d6462f748de3bf17ef479b2855d1af67c90045f6ab6187062fb724f9c17`
-- **Coinbase pubkey script** (unspendable):  
-  `04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f`
-- **Genesis time** (Unix timestamp): 1676412978 (Tue Feb 14 15:16:18 2023 UTC)
+- **Timestamp** (embedded message):  
+  `"BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."`
+- **Coinbase Pubkey Script** (unspendable):  
+  `04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f6`<br>`1deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f`
+- **Genesis Time** (Unix timestamp): 1676412978 (Tue Feb 14 15:16:18 2023 UTC)
 - **nBits** (difficulty target): `0x1d00ffff`
 - **Nonce** (found via search): 1429287480
-- **Merkle root**: `b9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a`
-- **Genesis block hash**:  
+- **Merkle Root**: `b9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a`
+- **Genesis Block Hash**:  
   `00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94`
 
-These values were generated using a standard Bitcoin-style genesis script (similar to `genesis.py` tools):
-`python3 genesis.py -t 1676412978 -z "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..." -v 1500000000`
+Values above were found/generated using the /share/genesis script with the following parameters:<br>
+`python3 genesis.py -t 1676412978`<br>`-z "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."`<br>`-v 1500000000`
 
 ---
 
@@ -66,3 +64,5 @@ AZCoin is experimental software. Participate at your own risk. It aims to cataly
 6. **Upload assets:**
     - All compiled binaries
     - SHA256SUMS file (generate via sha256sum *.tar.gz *.zip > SHA256SUMS)
+
+
