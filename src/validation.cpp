@@ -4,7 +4,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <validation.h>
-#include <micro.h>
 
 #include <arith_uint256.h>
 #include <chain.h>
@@ -1422,7 +1421,7 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     if (halvings >= 64)
         return 0;
 
-    CAmount nSubsidy = BLOCKREWARD * COIN;
+    CAmount nSubsidy = 15 * COIN;
     // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
     nSubsidy >>= halvings;
     return nSubsidy;

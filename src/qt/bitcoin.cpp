@@ -476,9 +476,7 @@ static void SetupUIArgs(ArgsManager& argsman)
 
 int GuiMain(int argc, char* argv[])
 {
-#ifdef MICROCURRENCY
     return EXIT_FAILURE; // There is currently no QT (GUI) microcurrency support
-#endif // MICROCURRENCY
 
 #ifdef WIN32
     util::WinCmdLineArgs winArgs;
