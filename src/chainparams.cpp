@@ -1,5 +1,4 @@
 #include "chainparams.h"
-#include "micro.h"
 
 #include "chainparamsseeds.h"
 #include "consensus/merkle.h"
@@ -13,51 +12,6 @@
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-
-/*
- * AZCOIN_MICRO_OVERRIDES_BEGIN
- *
- * Your preprocessing showed two sets of macro values:
- *  - First: values coming from micro.h early in the include chain.
- *  - Second: values being redefined inside chainparams.cpp (these win).
- *
- * We force the values we WANT for AZCoin Micro here to avoid chasing include/order issues.
- */
-#if defined(MICROCURRENCY)
-// Force AZCoin micro genesis inputs + expected hashes (ignore whatever micro.h/micro_*.h injects)
-
-#undef BLOCKREWARD
-#undef TIMESTAMP
-#undef PUBKEYSCRIPT
-#undef TIME
-#undef DBITS
-#undef NONCE
-#undef MERKLEHASH
-#undef GENESISHASH
-#undef PCHMESSAGESTART0
-#undef PCHMESSAGESTART1
-#undef PCHMESSAGESTART2
-#undef PCHMESSAGESTART3
-
-// --- AZCoin Micro fixed values ---
-#define BLOCKREWARD         15
-#define TIMESTAMP           "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."
-#define PUBKEYSCRIPT        "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"
-#define TIME                1676412978
-#define DBITS               0x1d00ffff
-#define NONCE               1429287480
-
-#define MERKLEHASH          "0xb9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a"
-#define GENESISHASH         "0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94"
-
-// Message start for AZCoin micro
-#define PCHMESSAGESTART0    0x81
-#define PCHMESSAGESTART1    0x9e
-#define PCHMESSAGESTART2    0x85
-#define PCHMESSAGESTART3    0x1c
-
-#endif
-/* AZCOIN_MICRO_OVERRIDES_END */
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp,
                                 const CScript& genesisOutputScript,
@@ -528,7 +482,7 @@ public:
         strNetworkID = CBaseChainParams::MICRO;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = HALVINGINTERVAL;
+        consensus.nSubsidyHalvingInterval = 262800;
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1;
@@ -562,27 +516,27 @@ public:
              * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
              * a large 32-bit integer with any alignment.
              */
-        pchMessageStart[0] = PCHMESSAGESTART0;
-        pchMessageStart[1] = PCHMESSAGESTART1;
-        pchMessageStart[2] = PCHMESSAGESTART2;
-        pchMessageStart[3] = PCHMESSAGESTART3;
+        pchMessageStart[0] = 0x81;
+        pchMessageStart[1] = 0x9e;
+        pchMessageStart[2] = 0x85;
+        pchMessageStart[3] = 0x1c;
         nDefaultPort = 19333;
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size = 0;
         m_assumed_chain_state_size = 0;
 
-        const char* pszTimestamp = TIMESTAMP;
-        const CScript genesisOutputScript = CScript() << ParseHex(PUBKEYSCRIPT) << OP_CHECKSIG;
-        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, TIME, NONCE, DBITS, 1, BLOCKREWARD * COIN);
+        const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64...";
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
       
 
         std::cerr << "GENESIS computed: " << consensus.hashGenesisBlock.ToString() << std::endl;
-        std::cerr << "GENESIS expected: " << uint256S(GENESISHASH).ToString() << std::endl;
+        std::cerr << "GENESIS expected: " << uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94").ToString() << std::endl;
         std::cerr << "GENESIS merkle  : " << genesis.hashMerkleRoot.ToString() << std::endl;
 
-        assert(consensus.hashGenesisBlock == uint256S(GENESISHASH));
-        assert(genesis.hashMerkleRoot == uint256S(MERKLEHASH));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94"));
+        assert(genesis.hashMerkleRoot == uint256S("0xb9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a"));
 
         vFixedSeeds.clear(); // The launch of microcurrencies don't have any fixed seeds.
         vSeeds.clear();
@@ -594,7 +548,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
-        bech32_hrp = BECH32HRP;
+        bech32_hrp = "az";
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
