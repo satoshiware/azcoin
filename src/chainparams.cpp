@@ -51,7 +51,8 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp,
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; // BTC: const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+    // DEBUGGING!!!!!!!!! coment it out for debuggin: const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; // BTC: const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+    const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";  ////////// Added it back in for debugging.  DEBUGGING!!!!!!!!!
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
@@ -93,7 +94,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;                                // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 709632;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         consensus.nMinimumChainWork = uint256();                            // consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        consensus.defaultAssumeValid = uint256("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"); // !!! UPDATES HERE !!!
+        consensus.defaultAssumeValid = uint256(); // !!! UPDATES HERE !!!               we want to put      788400, uint256S("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"   here. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IT WON't COMPILE WITH THIS UPDATE !!!!!!!!!!!!!!!!
 
         /**
              * The message start string is designed to be unlikely to occur in normal data.
@@ -109,7 +110,11 @@ public:
         m_assumed_blockchain_size = 0;                                      // m_assumed_blockchain_size = 460;
         m_assumed_chain_state_size = 0;                                     // m_assumed_chain_state_size = 6;
 
-        genesis = CreateGenesisBlock(1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN); // BTC: genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
+        // trying to debug why there is a failure in validating genesis block; so added back in temporarily
+        const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; //////////////////////////////////////////////// That's new ////////////////////////////////////  DEBUGGING!!!!!!!!!
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;  //////////////////////////////////////////////// That's new ////////////////////////////////////  DEBUGGING!!!!!!!!!
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN);      // genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);   DEBUGGING!!!!!!!!!
+        // DEBUGGING!!!!!!!!! coment out for code above   genesis = CreateGenesisBlock(1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN); // BTC: genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         std::cerr << "GENESIS computed: " << consensus.hashGenesisBlock.ToString() << std::endl;
@@ -142,8 +147,8 @@ public:
         m_is_test_chain = false;
         m_is_mockable_chain = false;
 
-        // Checkpoint data is a hardcoded list of trusted block hashes at specific heights that the node can rely on as "known good" during initial sync and chain validation. !!! UPDATES HERE !!!
-        checkpointData = {{
+        // Checkpoint data is a hardcoded list of trusted block hashes at specific heights that the node can rely on as "known good" during initial sync and chain validation. !!! UPDATE HERE !!!
+    /*    checkpointData = {{
             {65700, uint256S("0000000000000534926e27f75be6ac5e45063c8cf41680a693ee7fe1d4de0c55")},
             {131400, uint256S("000000000000038a56d83d4a2375ceedebcce428b777fef24dd1235fa8692920")},
             {197100, uint256S("000000000000057bf380a0c4b7487cbb0bfbf07af474b9d76068900cabcdb9b6")},
@@ -156,7 +161,8 @@ public:
             {657000, uint256S("00000000000004c6e7ca2f68dec647b6c4f36dd9d57be7bbfd9bd7dd82aac435")},
             {722700, uint256S("000000000000019e4f807875c9011b6860cdf6fe351eb96244811d530e883385")},
             {788400, uint256S("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5")},
-        }};
+        }};*/
+        checkpointData = {}; //////////// grok recommendation to fix segmentation fault. still debugging.  DEBUGGING!!!!!!!!!
 
         m_assumeutxo_data = MapAssumeutxo{
             // TODO to be specified in a future patch.
