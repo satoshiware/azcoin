@@ -51,7 +51,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp,
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+    const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; // BTC: const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
@@ -62,126 +62,114 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
 class CMainParams : public CChainParams {
 public:
     CMainParams() {
-        strNetworkID = CBaseChainParams::MAIN;                              // strNetworkID = CBaseChainParams::MICRO;
-        consensus.signet_blocks = false;                                    // consensus.signet_blocks = false;
-        consensus.signet_challenge.clear();                                 // consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 262800;                         // consensus.nSubsidyHalvingInterval = 210000;
-        // consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22"); ####################################### Not in the micro; yes in the main
-        consensus.BIP34Height = 1;                                          // consensus.BIP34Height = 227931;
-        consensus.BIP34Hash = uint256();                                    // consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
-        consensus.BIP65Height = 1;                                          // consensus.BIP65Height = 388381;
-        consensus.BIP66Height = 1;                                          // consensus.BIP66Height = 363725;
-        consensus.CSVHeight = 1;                                            // consensus.CSVHeight = 419328;
-        consensus.SegwitHeight = 0;                                         // consensus.SegwitHeight = 481824;
-        consensus.MinBIP9WarningHeight = 0;                                 // consensus.MinBIP9WarningHeight = 483840;
-        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 2 * 24 * 60 * 60; // Two Days        // consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
-        consensus.nPowTargetSpacing = 2 * 60;            // Two Minutes     // consensus.nPowTargetSpacing = 10 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = false;                     // consensus.fPowAllowMinDifficultyBlocks = false;
-        consensus.fPowNoRetargeting = false;                                // consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 1815; // 90% of 2016     // consensus.nRuleChangeActivationThreshold = 1815;
-        consensus.nMinerConfirmationWindow = 2016;       // nPowTargetTimespan / nPowTargetSpacing // consensus.nMinerConfirmationWindow = 2016;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;   // consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;   // consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;       // consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0; // No activation delay       // consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0;
+        strNetworkID = CBaseChainParams::MAIN;
+        consensus.signet_blocks = false;
+        consensus.signet_challenge.clear();
+        consensus.nSubsidyHalvingInterval = 262800; // BTC = 210000
+        // consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22"); ####################################### Not in the micro; yes in the main <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.BIP34Height = 1; // btc = 227931
+        consensus.BIP34Hash = uint256();                                    // consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8"); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.BIP65Height = 1; // btc = 388381
+        consensus.BIP66Height = 1; // btc = 363725
+        consensus.CSVHeight = 1; // btc = 419328
+        consensus.SegwitHeight = 0; // btc = 481824
+        consensus.MinBIP9WarningHeight = 0; // btc = 483840
+        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nPowTargetTimespan = 2 * 24 * 60 * 60; // Two Days (BTC = 14 * 24 * 60 * 60)
+        consensus.nPowTargetSpacing = 2 * 60;// Two Minutes (BTC = 10 * 60)
+        consensus.fPowAllowMinDifficultyBlocks = false;
+        consensus.fPowNoRetargeting = false;
+        consensus.nRuleChangeActivationThreshold = 1815; // 90% of 2016
+        consensus.nMinerConfirmationWindow = 2016;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0; // No activation delay
 
         // Deployment of Taproot (BIPs 340-342)
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;      // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;    // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = 1619222400;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;         // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = 1628640000;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;                                // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 709632;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;    // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = 1619222400;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;         // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = 1628640000;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;                                // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 709632;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        consensus.nMinimumChainWork = uint256();                            // consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");
-        consensus.defaultAssumeValid = uint256();                           // consensus.defaultAssumeValid = uint256S("0x000000000000000000052d314a259755ca65944e68df6b12a067ea8f1f5a7091");
+        consensus.nMinimumChainWork = uint256();                            // consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.defaultAssumeValid = uint256("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"); // !!! UPDATES HERE !!!
 
         /**
              * The message start string is designed to be unlikely to occur in normal data.
              * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
              * a large 32-bit integer with any alignment.
              */
-        pchMessageStart[0] = 0x81;                                          // pchMessageStart[0] = 0xf9;
-        pchMessageStart[1] = 0x9e;                                          // pchMessageStart[1] = 0xbe;
-        pchMessageStart[2] = 0x85;                                          // pchMessageStart[2] = 0xb4;
-        pchMessageStart[3] = 0x1c;                                          // pchMessageStart[3] = 0xd9;
-        nDefaultPort = 19333;                                               // nDefaultPort = 8333;
-        nPruneAfterHeight = 100000;                                         // nPruneAfterHeight = 100000;
+        pchMessageStart[0] = 0x81; // BTC = 0xf9
+        pchMessageStart[1] = 0x9e; // BTC = 0xbe
+        pchMessageStart[2] = 0x85; // BTC = 0xb4
+        pchMessageStart[3] = 0x1c; // BTC = 0xd9
+        nDefaultPort = 19333; // BTC = 8333
+        nPruneAfterHeight = 100000; // BTC = 100000
         m_assumed_blockchain_size = 0;                                      // m_assumed_blockchain_size = 460;
         m_assumed_chain_state_size = 0;                                     // m_assumed_chain_state_size = 6;
 
-        const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; //////////////////////////////////////////////// That's new ////////////////////////////////////
-        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;  //////////////////////////////////////////////// That's new ////////////////////////////////////
-        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN);      // genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();                                                                         // consensus.hashGenesisBlock = genesis.GetHash();
+        genesis = CreateGenesisBlock(1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN); // BTC: genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
 
-        std::cerr << "GENESIS computed: " << consensus.hashGenesisBlock.ToString() << std::endl;                                //////////////////////////////////////////////// That's new ////////////////////////////////////
-        std::cerr << "GENESIS expected: " << uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94").ToString() << std::endl; //////////////////////////////////////////////// That's new ////////////////////////////////////
-        std::cerr << "GENESIS merkle  : " << genesis.hashMerkleRoot.ToString() << std::endl;                                    //////////////////////////////////////////////// That's new ////////////////////////////////////
+        std::cerr << "GENESIS computed: " << consensus.hashGenesisBlock.ToString() << std::endl;
+        std::cerr << "GENESIS expected: " << uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94").ToString() << std::endl;
+        std::cerr << "GENESIS merkle  : " << genesis.hashMerkleRoot.ToString() << std::endl;
 
-        assert(consensus.hashGenesisBlock == uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94"));   // assert(consensus.hashGenesisBlock == uint256S("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"));
-        assert(genesis.hashMerkleRoot == uint256S("0xb9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a"));       // assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94")); // BTC hashGenesisBlock = "0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
+        assert(genesis.hashMerkleRoot == uint256S("0xb9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a")); // BTC hashMerkleRoot = "0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
 
-        vFixedSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////   -------> See below, it is set???
-        vSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////
-        vSeeds.emplace_back("dummySeed.invalid."); //////////////////////////////////////////////// That's new ////////////////////////////////////
-        // vSeeds.emplace_back("seed.bitcoin.sipa.be.");
-        // vSeeds.emplace_back("dnsseed.bluematt.me.");
-        // vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org.");
-        // vSeeds.emplace_back("seed.bitcoinstats.com.");
-        // vSeeds.emplace_back("seed.bitcoin.jonasschnelli.ch.");
-        // vSeeds.emplace_back("seed.btc.petertodd.org.");
-        // vSeeds.emplace_back("seed.bitcoin.sprovoost.nl.");
-        // vSeeds.emplace_back("dnsseed.emzy.de.");
-        // vSeeds.emplace_back("seed.bitcoin.wiz.biz.");
+        vFixedSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////   -------> See below, it is set??? <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        vSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        vSeeds.emplace_back("dummySeed.invalid."); //////////////////////////////////////////////// That's new ////////////////////////////////////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // vSeeds.emplace_back("seed.bitcoin.sipa.be."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // vSeeds.emplace_back("dnsseed.bluematt.me."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // vSeeds.emplace_back("seed.bitcoinstats.com."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, microcurrencies will use BECH32 only.     // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, microcurrencies will use BECH32 only.     // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
-        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128);        // base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};              // base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};              // base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, azcoin will use BECH32 only.     // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0); <<<<<<<<<<<<<<<<<<
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, azcoin will use BECH32 only.     // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5); <<<<<<<<<<<<<<<<<<
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
-        bech32_hrp = "az";                                                  // bech32_hrp = "bc";
+        bech32_hrp = "az"; // BTC = "bc"
 
-        // vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
+        // vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        fDefaultConsistencyChecks = false;      // fDefaultConsistencyChecks = false;
-        fRequireStandard = true;                // fRequireStandard = true;
-        m_is_test_chain = false;                // m_is_test_chain = false;
-        m_is_mockable_chain = false;            // m_is_mockable_chain = false;
+        fDefaultConsistencyChecks = false;
+        fRequireStandard = true;
+        m_is_test_chain = false;
+        m_is_mockable_chain = false;
 
+        // Checkpoint data is a hardcoded list of trusted block hashes at specific heights that the node can rely on as "known good" during initial sync and chain validation. !!! UPDATES HERE !!!
+        checkpointData = {{
+            {65700, uint256S("0000000000000534926e27f75be6ac5e45063c8cf41680a693ee7fe1d4de0c55")},
+            {131400, uint256S("000000000000038a56d83d4a2375ceedebcce428b777fef24dd1235fa8692920")},
+            {197100, uint256S("000000000000057bf380a0c4b7487cbb0bfbf07af474b9d76068900cabcdb9b6")},
+            {262800, uint256S("00000000000001b57122f73fdc2e85b37a4245bcbd46f0a42b36d90b76c82c77")},
+            {328500, uint256S("000000000000062341deb42afaa37d09920dfe9d52c717436ff81a7bf431f1cb")},
+            {394200, uint256S("0000000000000227e0339c8de972c6c3ffe7a10f1e0f9a8455cce905ef16a1a0")},
+            {459900, uint256S("000000000000040b995ac74921a025899419f843cd605a0d145facbe2276aa60")},
+            {525600, uint256S("0000000000000606cbf868a3335b7e7f874fe1dba560993bb615b712450e03ee")},
+            {591300, uint256S("0000000000000202e6c230d59162230c18201a9e018064ed1ffaa48d9901e4db")},
+            {657000, uint256S("00000000000004c6e7ca2f68dec647b6c4f36dd9d57be7bbfd9bd7dd82aac435")},
+            {722700, uint256S("000000000000019e4f807875c9011b6860cdf6fe351eb96244811d530e883385")},
+            {788400, uint256S("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5")},
+        }};
 
+        m_assumeutxo_data = MapAssumeutxo{
+            // TODO to be specified in a future patch.
+        };
 
-
-        checkpointData = {  //////////////////////////////////////////////// That's new ////////////////////////////////////   -------> See below, it is set???
-            {}};            //////////////////////////////////////////////// That's new ////////////////////////////////////   -------> See below, it is set???
-        // checkpointData = {{
-        //     { 11111, uint256S("0x0000000069e244f73d78e8fd29ba2fd2ed618bd6fa2ee92559f542fdb26e7c1d")},
-        //     { 33333, uint256S("0x000000002dd5588a74784eaa7ab0507a18ad16a236e7b1ce69f00d7ddfb5d0a6")},
-        //     { 74000, uint256S("0x0000000000573993a3c9e41ce34471c079dcf5f52a0e824a81e7f953b8661a20")},
-        //     {105000, uint256S("0x00000000000291ce28027faea320c8d2b054b2e0fe44a773f3eefb151d6bdc97")},
-        //     {134444, uint256S("0x00000000000005b12ffd4cd315cd34ffd4a594f430ac814c91184a0d42d2b0fe")},
-        //     {168000, uint256S("0x000000000000099e61ea72015e79632f216fe6cb33d7899acb35b75c8303b763")},
-        //     {193000, uint256S("0x000000000000059f452a5f7340de6682a977387c17010ff6e6c3bd83ca8b1317")},
-        //     {210000, uint256S("0x000000000000048b95347e83192f69cf0366076336c639f9b7228e9ba171342e")},
-        //     {216116, uint256S("0x00000000000001b4f4b433e81ee46494af945cf96014816a4e2370f11b23df4e")},
-        //     {225430, uint256S("0x00000000000001c108384350f74090433e7fcf79a606b8e797f065b130575932")},
-        //     {250000, uint256S("0x000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214")},
-        //     {279000, uint256S("0x0000000000000001ae8c72a0b0c301f67e3afca10e819efa9041e458e9bd7e40")},
-        //     {295000, uint256S("0x00000000000000004d9b4ef50f0f9d686fd69db2e03af35a100370c64632a983")},
-        // }};
-
-        m_assumeutxo_data = MapAssumeutxo{                                     // m_assumeutxo_data = MapAssumeutxo{
-            // TODO to be specified in a future patch.                              // TODO to be specified in a future patch.
-        };                                                                      // };
-
-        chainTxData = ChainTxData{                                              //////////////////////////////////////////////// That's new ////////////////////////////////////
+        chainTxData = ChainTxData{                                              //////////////////////////////////////////////// That's new //////////////////////////////////// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             // Data from RPC: getchaintxstats 4096 $BLOCK_HASH
             /* nTime    */ 0,
             /* nTxCount */ 0,
             /* dTxRate  */ 0,
         };
 
-        // chainTxData = ChainTxData{
+        // chainTxData = ChainTxData{   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //     1645542140,
         //     712531200,
         //     2.891036496010309,
