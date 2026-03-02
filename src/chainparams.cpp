@@ -51,8 +51,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp,
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    // DEBUGGING!!!!!!!!! coment it out for debuggin: const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; // BTC: const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
-    const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";  ////////// Added it back in for debugging.  DEBUGGING!!!!!!!!!
+    const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; // BTC = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
     const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
@@ -93,55 +92,46 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT; // BTC = 1628640000
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0; // BTC = 709632
 
-		// !!! UPDATE HERE !!!
-        consensus.nMinimumChainWork = uint256(); // Update once there is sufficient POW on AZCoin // BTC: consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");
-        consensus.defaultAssumeValid = uint256("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"); // Block# 788400 // Updates the IBD to this trusted block hash without verification
+        // !!! UPDATE HERE !!! Update periodically every 6–12 months as the chain grows
+        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000175041824acc4cdf118"); // Minimum chain work floor for DoS protection
+            // blockheight=$(( $(azcoin-cli getblockcount) - 50000 ))
+            // azcoin-cli getblockheader $(azcoin-cli getblockhash $blockheight) | jq .chainwork
+        consensus.defaultAssumeValid = uint256S("0000000000000171427e3895cbedf65276fc424389a807d82a064e02f46b8524"); // Updates the IBD to this trusted block hash without verification
+            // blockheight=$(( $(azcoin-cli getblockcount) - 100000 ))
+            // azcoin-cli getblockhash $blockheight
+        m_assumed_blockchain_size = 0.4; // Estimated blockchain size (GB) up to assumevalid block - used for IBD storage warnings
+            // du -sb /var/lib/azcoin/blocks/ | awk '{size = $1 / 1024 / 1024 / 1024; printf "%.1f\n", (size * 2/3)}'
+        m_assumed_chain_state_size = 0.0; // Estimated chainstate size (GB) up to assumevalid block - used for IBD storage warnings
+            // du -sb /var/lib/azcoin/chainstate/ | awk '{size = $1 / 1024 / 1024 / 1024; printf "%.1f\n", (size * 2/3)}'
 
-        /**
-             * The message start string is designed to be unlikely to occur in normal data.
-             * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
-             * a large 32-bit integer with any alignment.
-             */
+        /* The message start string is designed to be unlikely to occur in normal data.
+        * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
+        * a large 32-bit integer with any alignment. */
         pchMessageStart[0] = 0x81; // BTC = 0xf9
         pchMessageStart[1] = 0x9e; // BTC = 0xbe
         pchMessageStart[2] = 0x85; // BTC = 0xb4
         pchMessageStart[3] = 0x1c; // BTC = 0xd9
+
         nDefaultPort = 19333; // BTC = 8333
-        nPruneAfterHeight = 100000; // BTC = 100000
-        m_assumed_blockchain_size = 0;                                      // m_assumed_blockchain_size = 460;
-        m_assumed_chain_state_size = 0;                                     // m_assumed_chain_state_size = 6;
+        nPruneAfterHeight = 100000;
 
-        // trying to debug why there is a failure in validating genesis block; so added back in temporarily
-        const char* pszTimestamp = "BTC BLK: 0000000000000000000021bb823d8518bfa49c6f16bce1545c4977eb829238a9 TXID: b5f53d64..."; //////////////////////////////////////////////// That's new ////////////////////////////////////  DEBUGGING!!!!!!!!!
-        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;  //////////////////////////////////////////////// That's new ////////////////////////////////////  DEBUGGING!!!!!!!!!
-        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN);      // genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);   DEBUGGING!!!!!!!!!
-        // DEBUGGING!!!!!!!!! coment out for code above   genesis = CreateGenesisBlock(1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN); // BTC: genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1676412978, 1429287480, 0x1d00ffff, 1, 15 * COIN); // BTC = (1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN)
         consensus.hashGenesisBlock = genesis.GetHash();
-
-        std::cerr << "GENESIS computed: " << consensus.hashGenesisBlock.ToString() << std::endl;
-        std::cerr << "GENESIS expected: " << uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94").ToString() << std::endl;
-        std::cerr << "GENESIS merkle  : " << genesis.hashMerkleRoot.ToString() << std::endl;
 
         assert(consensus.hashGenesisBlock == uint256S("0x00000000b00ff40d0f986a2314bbacbc003743b4b7062c6221b08256edc1ae94")); // BTC hashGenesisBlock = "0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
         assert(genesis.hashMerkleRoot == uint256S("0xb9ed7f5a0f23a5063818064eb28979ca1a22fdbc38fbeb3726f759d83e82a69a")); // BTC hashMerkleRoot = "0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
 
-        vFixedSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////   -------> See below, it is set??? <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        vSeeds.clear(); //////////////////////////////////////////////// That's new ////////////////////////////////////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        vSeeds.emplace_back("dummySeed.invalid."); //////////////////////////////////////////////// That's new ////////////////////////////////////<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        // vSeeds.emplace_back("seed.bitcoin.sipa.be."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        // vSeeds.emplace_back("dnsseed.bluematt.me."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        // vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        // vSeeds.emplace_back("seed.bitcoinstats.com."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        vSeeds.emplace_back("dummySeed.invalid.");
 
-        // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, azcoin will use BECH32 only.     // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0); <<<<<<<<<<<<<<<<<<
-        // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, azcoin will use BECH32 only.     // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5); <<<<<<<<<<<<<<<<<<
+        // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 0); // Commented out (disabled); We'll use BECH32 only
+        // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 5); // Commented out (disabled); We'll use BECH32 only
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128); // Private key WIF
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E}; // xpub
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4}; // xprv
 
         bech32_hrp = "az"; // BTC = "bc"
-
-        // vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -170,9 +160,9 @@ public:
 
         chainTxData = ChainTxData{
             // Data from RPC: getchaintxstats 4096
-            /* nTime    */ 1772465357, 				// BTC = 1645542140
-            /* nTxCount */ 865973, 					// BTC = 712531200
-            /* dTxRate  */ 0.00797163219947764, 	// BTC = 2.891036496010309
+            /* nTime    */ 1772465357,              // BTC = 1645542140
+            /* nTxCount */ 865973,                  // BTC = 712531200
+            /* dTxRate  */ 0.00797163219947764,     // BTC = 2.891036496010309
         };
     }
 };
@@ -224,7 +214,10 @@ public:
         m_assumed_blockchain_size = 40;
         m_assumed_chain_state_size = 2;
 
-        genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
+        const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
+        //genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
@@ -356,7 +349,10 @@ public:
         nDefaultPort = 38333;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1598918400, 52613770, 0x1e0377ae, 1, 50 * COIN);
+        const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1598918400, 52613770, 0x1e0377ae, 1, 50 * COIN);
+        //genesis = CreateGenesisBlock(1598918400, 52613770, 0x1e0377ae, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
@@ -429,7 +425,10 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
+        const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+        const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
+        genesis = CreateGenesisBlock(pszTimestamp, genesisOutputScript, 1296688602, 2, 0x207fffff, 1, 50 * COIN);
+        //genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0x0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
