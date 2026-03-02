@@ -67,9 +67,9 @@ public:
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
         consensus.nSubsidyHalvingInterval = 262800; // BTC = 210000
-        // consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22"); ####################################### Not in the micro; yes in the main <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        // consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22"); // BTC: BIP16 P2SH activation exception for Bitcoin mainnet block 173805 (not needed for AZCoin)
         consensus.BIP34Height = 1; // btc = 227931
-        consensus.BIP34Hash = uint256();                                    // consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8"); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.BIP34Hash = uint256(); // zero hash = disabled // BTC = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8") // Skip BIP34 height-in-coinbase check for this one block
         consensus.BIP65Height = 1; // btc = 388381
         consensus.BIP66Height = 1; // btc = 363725
         consensus.CSVHeight = 1; // btc = 419328
@@ -89,12 +89,13 @@ public:
 
         // Deployment of Taproot (BIPs 340-342)
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;    // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = 1619222400;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;         // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = 1628640000;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0;                                // consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 709632;  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE; // BTC = 1619222400
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT; // BTC = 1628640000
+        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0; // BTC = 709632
 
-        consensus.nMinimumChainWork = uint256();                            // consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        consensus.defaultAssumeValid = uint256(); // !!! UPDATES HERE !!!               we want to put      788400, uint256S("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"   here. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IT WON't COMPILE WITH THIS UPDATE !!!!!!!!!!!!!!!!
+		// !!! UPDATE HERE !!!
+        consensus.nMinimumChainWork = uint256(); // Update once there is sufficient POW on AZCoin // BTC: consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000002927cdceccbd5209e81e80db");
+        consensus.defaultAssumeValid = uint256("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5"); // Block# 788400 // Updates the IBD to this trusted block hash without verification
 
         /**
              * The message start string is designed to be unlikely to occur in normal data.
@@ -132,11 +133,11 @@ public:
         // vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         // vSeeds.emplace_back("seed.bitcoinstats.com."); <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, azcoin will use BECH32 only.     // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0); <<<<<<<<<<<<<<<<<<
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, azcoin will use BECH32 only.     // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5); <<<<<<<<<<<<<<<<<<
-        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+        // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 3); // Public address leads with 2; however, azcoin will use BECH32 only.     // base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0); <<<<<<<<<<<<<<<<<<
+        // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 8); // Script address leads with 4; however, azcoin will use BECH32 only.     // base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5); <<<<<<<<<<<<<<<<<<
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 128); // Private key WIF
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E}; // xpub
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4}; // xprv
 
         bech32_hrp = "az"; // BTC = "bc"
 
@@ -147,8 +148,8 @@ public:
         m_is_test_chain = false;
         m_is_mockable_chain = false;
 
-        // Checkpoint data is a hardcoded list of trusted block hashes at specific heights that the node can rely on as "known good" during initial sync and chain validation. !!! UPDATE HERE !!!
-    /*    checkpointData = {{
+        // Checkpoint data is a hardcoded list of trusted block hashes at specific heights that the node can rely on as "known good" during initial sync and chain validation.
+        checkpointData = {{
             {65700, uint256S("0000000000000534926e27f75be6ac5e45063c8cf41680a693ee7fe1d4de0c55")},
             {131400, uint256S("000000000000038a56d83d4a2375ceedebcce428b777fef24dd1235fa8692920")},
             {197100, uint256S("000000000000057bf380a0c4b7487cbb0bfbf07af474b9d76068900cabcdb9b6")},
@@ -161,25 +162,18 @@ public:
             {657000, uint256S("00000000000004c6e7ca2f68dec647b6c4f36dd9d57be7bbfd9bd7dd82aac435")},
             {722700, uint256S("000000000000019e4f807875c9011b6860cdf6fe351eb96244811d530e883385")},
             {788400, uint256S("00000000000001b4817d24c30646aa410fc0eafd35c16cb7d1117c0b95baa7b5")},
-        }};*/
-        checkpointData = {}; //////////// grok recommendation to fix segmentation fault. still debugging.  DEBUGGING!!!!!!!!!
+        }};
 
         m_assumeutxo_data = MapAssumeutxo{
             // TODO to be specified in a future patch.
         };
 
-        chainTxData = ChainTxData{                                              //////////////////////////////////////////////// That's new //////////////////////////////////// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-            // Data from RPC: getchaintxstats 4096 $BLOCK_HASH
-            /* nTime    */ 0,
-            /* nTxCount */ 0,
-            /* dTxRate  */ 0,
+        chainTxData = ChainTxData{
+            // Data from RPC: getchaintxstats 4096
+            /* nTime    */ 1772465357, 				// BTC = 1645542140
+            /* nTxCount */ 865973, 					// BTC = 712531200
+            /* dTxRate  */ 0.00797163219947764, 	// BTC = 2.891036496010309
         };
-
-        // chainTxData = ChainTxData{   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        //     1645542140,
-        //     712531200,
-        //     2.891036496010309,
-        // };
     }
 };
 
