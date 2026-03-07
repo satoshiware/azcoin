@@ -57,47 +57,46 @@ AZCoin is experimental software. Participate at your own risk. It aims to cataly
 
 ### 2. Update chain parameters
 *These values do **not need to be updated every release**, but should be refreshed periodically (e.g., every 3–6 months).*
+* File location & name: `src/chainparams.cpp`
+* Look for the section marked: `// !!! UPDATE HERE !!!`
+* Follow the commands in the comments to update:<br>
+    `consensus.nMinimumChainWork`<br>
+    `consensus.defaultAssumeValid`<br>
+    `m_assumed_blockchain_size`<br>
+    `m_assumed_chain_state_size`<br>
 
-Update the parameters in: `src/chainparams.cpp`
-Look for the section marked: // !!! UPDATE HERE !!!
-Follow the commands in the comments in that section to update:
-    consensus.nMinimumChainWork
-    consensus.defaultAssumeValid
-    m_assumed_blockchain_size
-    m_assumed_chain_state_size
-    Important: If you make any changes in this section, also update the LAST UPDATE comment with the current date. Commit the updated values if changes were made.
+***IMPORTANT**: If you make any changes in this section, also update the "LAST UPDATE: ??/??/????" comment with the current date.*
 
 ### 3. Update version number
-Update the version defines at the top of configure.ac for the new release:
-	define(_CLIENT_VERSION_MAJOR, 0)
-	define(_CLIENT_VERSION_MINOR, 2)
-	define(_CLIENT_VERSION_BUILD, 1)
-	define(_CLIENT_VERSION_RC, 0)
-	define(_CLIENT_VERSION_IS_RELEASE, true)
-    _CLIENT_VERSION_RC: 0 for final releases, greater than 0 for release candidates.
-    _CLIENT_VERSION_IS_RELEASE: true for official releases, false for release candidates.
+* Update the version defines at the top of configure.ac for the new release:<br>
+	`define(_CLIENT_VERSION_MAJOR, 0)`<br>
+	`define(_CLIENT_VERSION_MINOR, 2)`<br>
+	`define(_CLIENT_VERSION_BUILD, 1)`<br>
+	`define(_CLIENT_VERSION_RC, 0)`<br>
+	`define(_CLIENT_VERSION_IS_RELEASE, true)`<br>
+* *Let CLIENT_VERSION_RC equal 0 for official releases and greater than 0 for release candidates.*
+* *Set CLIENT_VERSION_IS_RELEASE to true for official releases, false for release candidates.*
 
 ### 4. Update CHANGELOG.md
-    Open CHANGELOG.md in the root directory.
-    Move all items from the [Unreleased] section into a new section for the version you just defined (e.g., [0.2.1] - 2026-03-07).
-    Ensure all major bug fixes, new features, and breaking changes are clearly listed for users.
+Move all items from the [Unreleased] section into a new section for the version you just defined (e.g., [0.2.1] - 2026-03-07).<br>
+Ensure all major bug fixes, new features, and breaking changes are clearly listed for users.
 
 ### 5. Build binaries
 On a fresh Debian system (or Debian under WSL):
-    Prepare script: Copy the cross-compile.sh script to the machine.
-    Permissions: Give it executable permission:
-    chmod +x cross-compile.sh
-    Execute: Run the script as root or with sudo:
-    sudo ./cross-compile.sh
+- Copy the cross-compile.sh script to the machine
+- Give it executable permission: chmod +x cross-compile.sh
+- Run the script as root or with sudo: sudo ./cross-compile.sh
+	- During the execution, select the master branch. It will compile its tip (last commit)
+    - This script will build all release binaries for supported platforms and the SHA256SUMS file
+- Rename binaries: Replace the commit number with the version. e.g. azcoin-0.2.0-x86_64-linux-gnu.tar.gz
+- Update the SHA256SUMS file with the newly changed names
 
-The script will build all release binaries for the supported platforms. Verify that the builds complete successfully.
-
-### 6. Tag & Release on GitHub
+### 6. Tag & Release on GitHub Website
 Once the binaries are built and verified, create the release on GitHub:
-    Create Release: Go to the Releases page of your repository and click Create a new release.
-    Tagging: Enter the version number as the tag (e.g., v0.2.1) and use the same version for the release name (e.g., Azcoin v0.2.1).
-    Description: In the description field, summarize the changes or highlights (you can copy these directly from your updated CHANGELOG.md).
-    Upload Assets:
-        Drag and drop all compiled binaries.
-        Include the SHA256SUMS file (Generate via: sha256sum *.tar.gz *.zip > SHA256SUMS).
-    Publish: Click Publish release to finalize the tag and attach the files.
+- Go to the Releases page of your repository and click "Draft a new release"
+- Click "Select tag" and then click "Create new tag". Enter the version number as the tag (e.g., v0.2.1)
+- Use the same version as part of the release name (e.g., AZCoin v0.2.1).
+- Add Description: Summarize the changes or highlights (you can copy these directly from your updated CHANGELOG.md).
+- Upload Assets: Compiled binaries, SHA256SUMS file, etc.
+- Consider Options: "Set as a pre-release" and "Set as the latest release".
+- Click "Publish release".
