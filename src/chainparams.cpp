@@ -93,6 +93,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0; // BTC = 709632
 
         // !!! UPDATE HERE !!! Update periodically every 6–12 months as the chain grows
+        // LAST UPDATE: 03/07/2026
         consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000175041824acc4cdf118"); // Minimum chain work floor for DoS protection
             // blockheight=$(( $(azcoin-cli getblockcount) - 50000 ))
             // azcoin-cli getblockheader $(azcoin-cli getblockhash $blockheight) | jq .chainwork
