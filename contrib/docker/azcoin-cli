@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+DATADIR="${AZCOIN_DATA:-/data}"
+CONF="${DATADIR}/azcoin.conf"
+
+exec /usr/local/bin/bitcoin-cli -datadir="$DATADIR" -conf="$CONF" "$@"
