@@ -48,7 +48,7 @@ set -euo pipefail
 # Make sure we are running as root
 # ---------------------------------------------
 if [[ $EUID -ne 0 ]]; then
-    log "Error: Must run as root (sudo)."
+    echo "Error: Must run as root (sudo)."
     exit 1
 fi
 
