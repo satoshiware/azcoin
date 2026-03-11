@@ -2,14 +2,17 @@
 FROM debian:testing-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG AZCOIN_VERSION=v0.2.0
-ARG AZCOIN_TARBALL=azcoin-0.2.0-x86_64-linux-gnu.tar.gz
+ARG AZCOIN_VERSION=Latest
+ARG AZCOIN_TARBALL_URL=https://github.com/satoshiware/azcoin/releases/download/Latest/azcoin-x86_64-linux-gnu.tar.gz
+ARG AZCOIN_TARBALL=azcoin-x86_64-linux-gnu.tar.gz
+ARG AZCOIN_SHA256=""
 
 ENV AZCOIN_DATA=/data
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     ca-certificates \
+    curl \
     gosu \
     libgcc-s1 \
     libsqlite3-0 \
@@ -26,14 +29,18 @@ RUN useradd -r -m -u 10001 -s /usr/sbin/nologin azcoin \
 
 WORKDIR /opt/azcoin-download
 
-COPY docker/dist/${AZCOIN_TARBALL} ./
-COPY docker/dist/SHA256SUMS ./
-
 RUN set -eux; \
-    grep "${AZCOIN_TARBALL}$" SHA256SUMS | sed 's#  \./bin/#  #' | sha256sum -c -; \
+    curl -fL "${AZCOIN_TARBALL_URL}" -o "${AZCOIN_TARBALL}"; \
+    if [ -n "${AZCOIN_SHA256}" ]; then \
+      echo "${AZCOIN_SHA256}  ${AZCOIN_TARBALL}" | sha256sum -c -; \
+    fi; \
     tar -xzf "${AZCOIN_TARBALL}"; \
-    BIN_DIR="./azcoin-install/bin"; \
-    test -d "${BIN_DIR}"; \
+    if [ -d "./azcoin-install/bin" ]; then \
+      BIN_DIR="./azcoin-install/bin"; \
+    else \
+      BIN_DIR="$(find . -type f -name azcoind -exec dirname {} \; | head -n 1)"; \
+    fi; \
+    test -n "${BIN_DIR}"; \
     test -f "${BIN_DIR}/azcoind"; \
     test -f "${BIN_DIR}/azcoin-cli"; \
     test -f "${BIN_DIR}/azcoin-tx"; \
