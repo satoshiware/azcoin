@@ -61,4 +61,3 @@
   
   ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
   CMD []
-  
