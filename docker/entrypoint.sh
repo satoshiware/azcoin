@@ -77,6 +77,10 @@ if [ -n "${ADDNODE:-}" ]; then
   done
 fi
 
+if [ "${1:-}" = "azcoind" ]; then
+  shift
+fi
+
 exec "${DAEMON}" \
   "${chain_args[@]}" \
   -datadir="${DATADIR}" \
