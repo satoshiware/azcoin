@@ -91,7 +91,11 @@ On a fresh Debian system (or Debian under WSL):
 - Rename binaries: Replace the commit number with the version. e.g. azcoin-0.2.0-x86_64-linux-gnu.tar.gz
 - Update the SHA256SUMS file with the newly changed names
 
-### 6. Tag & Release on GitHub Website
+### 6. Generate signature file
+Execute the following linux command in the same directory as the SHA256SUMS file
+* gpg --detach-sign --armor --local-user $LONGKEYID --output SHA256SUMS.asc SHA256SUMS.txt
+
+### 7. Tag & Release on GitHub Website
 Once the binaries are built and verified, create the release on GitHub:
 - Go to the Releases page of your repository and click "Draft a new release"
 - Click "Select tag" and then click "Create new tag". Enter the version number as the tag (e.g., v0.2.1)
