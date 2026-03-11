@@ -60,5 +60,5 @@
   EXPOSE 19333 19332
   
   ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
-  CMD ["azcoind"]
+  CMD []
   
