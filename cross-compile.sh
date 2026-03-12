@@ -112,7 +112,7 @@ if [[ "$(basename "$SCRIPT_DIR")" == "$REPO_NAME" ]] && [[ -d "$SCRIPT_DIR/.git"
         echo "Error: Cannot change directory to repository root ($SCRIPT_DIR)."
         exit 1
     fi
-    
+
     echo "Changed working directory to repo root → proceeding."
     git fetch --tags --prune origin >/dev/null 2>&1 || true
     SKIP_CLONE=1
@@ -160,7 +160,7 @@ fi
 # ────────────────────────────────────────────────────────────────
 # Dirty check + fast path for local modifications
 # ────────────────────────────────────────────────────────────────
-if git diff --quiet --exit-code && git diff --cached --quiet && git ls-files --others --exclude-standard --directory | grep -q .; then
+if git diff --quiet --exit-code && git diff --cached --quiet && [[ -z "$(git ls-files --others --exclude-standard)" ]]; then
     # No untracked files either → clean
     :  # do nothing, continue to menu
 else
