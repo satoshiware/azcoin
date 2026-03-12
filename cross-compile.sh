@@ -13,9 +13,10 @@ set -euo pipefail
 #   4. Interactive prompt: lets the user select a specific branch tip, release tag, or commit hash
 #      → Stores the selected version in $SELECTED_VERSION (tag name if tag chosen, else short commit hash)
 #   5. Installs remaining native and cross-compile dependencies
-#   6. Cross-compiles AZCoin Core for three platforms using the depends/ system:
+#   6. Cross-compiles AZCoin Core for various platforms using the depends/ system:
 #      - Linux x86_64 (native-like)
 #      - Linux aarch64 (ARM64)
+#      - Linux riscv64 (RISC-V 64-bit)
 #      - Windows x86_64 (MinGW-w64)
 #   7. For each platform:
 #      - Runs autogen.sh → configure (with depends config.site) → make clean → make
@@ -40,6 +41,7 @@ set -euo pipefail
 #     Example:
 #       azcoin-v0.1.2-x86_64-linux-gnu.tar.gz
 #       azcoin-v0.1.2-aarch64-linux-gnu.tar.gz
+#       azcoin-v0.1.2-riscv64-linux-gnu.tar.gz
 #       azcoin-v0.1.2-win64.zip
 #       SHA256SUMS
 ####################################################################################################
@@ -271,6 +273,7 @@ echo "Selected version: $SELECTED_VERSION"
 apt -y install build-essential libtool autotools-dev automake pkg-config bsdmainutils curl zip
 apt -y install pkg-config # Helper tool used when compiling applications and libraries.
 apt -y install g++-aarch64-linux-gnu binutils-aarch64-linux-gnu # ARM 64-bit
+apt -y install g++-riscv64-linux-gnu binutils-riscv64-linux-gnu # RISC-V 64-bit
 apt -y install g++-mingw-w64-x86-64-posix # Windows x86 64-bit
 
 # Install SQLite (Required For The Descriptor Wallet)
@@ -359,6 +362,43 @@ cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
 rm -rf ./azcoin-install
 
+###################################### RISC-V 64 Bit ##############################################
+echo "Ready to compile for linux (riscv64)"
+read -p "Press [Enter] key to continue..."
+
+# Prepare the Cross Compiler for "ARM 64 Bit"
+cd ./depends
+make clean
+make HOST=riscv64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #RISC-V 64-bit
+
+# Make Configuration
+cd ..
+./autogen.sh # Make sure Bash's current working directory is the azcoin directory
+
+# Select Configuration for "RISC-V 64 Bit"
+CONFIG_SITE=$PWD/depends/riscv64-linux-gnu/share/config.site ./configure
+
+# Compile /w All Available Cores & Install
+make clean
+make -j $(($(nproc)+1))
+
+# Create Compressed Install Files in ./bin Directory
+make install DESTDIR=$PWD/mkinstall
+mv ./mkinstall/usr/local ./azcoin-install
+rm -rf ./mkinstall
+
+# Customize azcoin-install files & directory structure
+rm ./azcoin-install/bin/bench*
+rm ./azcoin-install/bin/test*
+rm -rf ./azcoin-install/include
+rm -rf ./azcoin-install/lib
+rm -rf ./azcoin-install/share/man
+cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+
+# Compress Install Files for "ARM 64 Bit"
+tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
+rm -rf ./azcoin-install
+
 ###################################### Windows x86 64 Bit ##############################################
 echo "Ready to compile for Windows (x86_64)"
 read -p "Press [Enter] key to continue..."
@@ -403,4 +443,5 @@ rm -rf ./azcoin-install
 # ---------------------------------------------
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
+sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip >> ./bin/SHA256SUMS
