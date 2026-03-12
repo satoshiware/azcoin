@@ -445,3 +445,4 @@ sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz >> ./bin/SH
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
 sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip >> ./bin/SHA256SUMS
+
