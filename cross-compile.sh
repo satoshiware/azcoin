@@ -9,16 +9,32 @@ set -euo pipefail
 # Main steps performed:
 #   1. Checks for root privileges (required for package installation)
 #   2. Updates system packages and installs essential build tools (git, cross-compilers, etc.)
-#   3. Clones the AZCoin repository and fetches all tags/branches
-#   4. Interactive prompt: lets the user select a specific branch tip, release tag, or commit hash
-#      → Stores the selected version in $SELECTED_VERSION (tag name if tag chosen, else short commit hash)
-#   5. Installs remaining native and cross-compile dependencies
-#   6. Cross-compiles AZCoin Core for various platforms using the depends/ system:
+#   3. Detects if already running inside an azcoin repository:
+#    - If yes → uses current directory (skips clone/update)
+#    - If no → clones or updates into ./azcoin
+#   4. Checks for uncommitted/untracked changes:
+#    - If clean → proceeds to version selection
+#    - If dirty → offers:
+#      • Continue building current state (skips version selection, uses local short hash + "-dirty"); SELECTED_VERSION="local-unknown-dirty"
+#      • Reset to clean state (discards changes)
+#      • Abort
+#   5. Interactive prompt: lets the user select a specific branch tip, release tag, or commit hash
+#    - Skipped if user chose to build current (possibly modified) working tree state
+#    - Stores the selected version in $SELECTED_VERSION:
+#       • Tag name (if tag chosen)
+#       • Short commit hash (if branch tip or specific commit chosen)
+#       • "local-<short-hash>-dirty" or timestamp fallback (if building current dirty state)
+#   6. Interactive prompt: lets the user select which CPU/platform(s) to build
+#    - ALL (x86_64-linux-gnu, aarch64-linux-gnu, riscv64-linux-gnu, win64)
+#    - Single platform only (x86_64, ARM64, RISC-V, Windows x86_64)
+#    - Abort
+#   7. Installs remaining native and cross-compile dependencies
+#   8. Cross-compiles AZCoin Core for various platforms using the depends/ system:
 #      - Linux x86_64 (native-like)
 #      - Linux aarch64 (ARM64)
 #      - Linux riscv64 (RISC-V 64-bit)
 #      - Windows x86_64 (MinGW-w64)
-#   7. For each platform:
+#   9. For each platform:
 #      - Runs autogen.sh → configure (with depends config.site) → make clean → make
 #      - Installs to a staging directory
 #      - Removes unnecessary files (benchmarks, tests, headers, libs, man pages)
@@ -27,7 +43,7 @@ set -euo pipefail
 #        • tar.gz for Linux platforms
 #        • zip for Windows
 #      - Places archives in ./azcoin/bin/
-#   8. Generates SHA256SUMS file containing hashes of all produced archives
+#   10. Generates SHA256SUMS file containing hashes of all produced archives
 #
 # Requirements:
 #   - Must be run as root (sudo) due to apt package installation
@@ -55,7 +71,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # ---------------------------------------------
-# Download AZCoin; select desired branch/tag/commit
+# Preparing environment: update, upgrade, and install git
 # ---------------------------------------------
 # Update package lists quietly, but fail if it doesn't work
 echo "Preparing environment..."
@@ -85,187 +101,360 @@ if ! apt -y install git >/dev/null 2>&1; then
 fi
 echo "Git is installed."
 
-# Clone azcoin repository
-rm -rf ./azcoin
-echo "Cloning azcoin repository..."
-if ! git clone https://github.com/satoshiware/azcoin ./azcoin; then
-    echo "ERROR: git clone failed. Check internet, repo URL, or directory conflicts." >&2
-    exit 1
+# ────────────────────────────────────────────────────────────────
+#  Detect if we're already inside the azcoin repo
+# ────────────────────────────────────────────────────────────────
+REPO_NAME="azcoin"
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+if [[ "$(basename "$SCRIPT_DIR")" == "$REPO_NAME" ]] && [[ -d "$SCRIPT_DIR/.git" ]]; then
+    echo "Script is running from inside the $REPO_NAME repository."
+    echo "Using current directory as build root (skipping clone)."
+    SKIP_CLONE=1
+else
+    SKIP_CLONE=0
 fi
-cd azcoin
-echo "azcoin is downloaded."
 
-# Select a branch, tag, or commit
-echo "Fetching latest tags, branches, and history..."
-git fetch --tags --prune origin
-while true; do
-    echo ""
-    echo "===================================================================="
-    echo " Which version do you want to build from?"
-    echo "===================================================================="
-    echo " 1) Branch tip     - Latest development code (may be unstable)"
-    echo " 2) Tag            - Fixed release point (recommended for stability)"
-    echo " 3) Commit hash    - Exact historical commit (advanced / reproduce bug)"
-    echo ""
-    echo " Most users should choose 2 (Tag) for a reliable, tested build."
-    echo " Press Enter for default (latest tag / stable release)."
-    echo "===================================================================="
-    read -p "Enter 1, 2, 3, or just press Enter for latest tag: " choice
 
-    if [ -z "$choice" ]; then
-        choice="2"
+# ────────────────────────────────────────────────────────────────
+#  Clone azcoin repository — only run this section if not already inside repo
+# ────────────────────────────────────────────────────────────────
+if [[ "${SKIP_CLONE:-0}" -eq 0 ]]; then
+    echo "Preparing AZCoin repository..."
+
+    REPO_DIR="./azcoin"
+    REPO_URL="https://github.com/satoshiware/azcoin"
+
+    if [[ -d "$REPO_DIR" ]]; then
+        if [[ -d "$REPO_DIR/.git" ]]; then
+            echo "Directory '$REPO_DIR' already exists and looks like a git repository."
+            echo "We'll try to update it instead of re-cloning."
+            cd "$REPO_DIR" || { echo "Cannot cd into $REPO_DIR"; exit 1; }
+            if ! git fetch --tags --prune origin; then
+                echo "ERROR: git fetch failed." >&2
+                exit 1
+            fi
+            echo "Repository updated."
+        else
+            echo "ERROR: '$REPO_DIR' exists but is not a git repository." >&2
+            echo "Please remove or rename it manually, then re-run the script." >&2
+            exit 1
+        fi
+    else
+        echo "Cloning fresh copy from $REPO_URL ..."
+        if ! git clone --depth=1 --no-single-branch "$REPO_URL" "$REPO_DIR"; then
+            echo "ERROR: git clone failed. Check your internet connection or the repository URL." >&2
+            exit 1
+        fi
+        cd "$REPO_DIR" || { echo "Cannot cd into freshly cloned $REPO_DIR"; exit 1; }
+        echo "Fresh clone completed."
     fi
+else
+    echo "Skipping clone/update — already in repository root."
+fi
 
-    case "$choice" in
-        1)  # ── Branch ───────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────
+# Dirty check + fast path for local modifications
+# ────────────────────────────────────────────────────────────────
+if git diff --quiet --exit-code && git diff --cached --quiet && git ls-files --others --exclude-standard --directory | grep -q .; then
+    # No untracked files either → clean
+    :  # do nothing, continue to menu
+else
+    echo ""
+    echo "┌──────────────────────────────────────────────────────────────┐"
+    echo "│         UNCOMMITTED / UNTRACKED CHANGES DETECTED             │"
+    echo "└──────────────────────────────────────────────────────────────┘"
+    echo ""
+    git status --short --branch
+    echo ""
+    echo "You have local modifications. What would you like to do?"
+    echo ""
+    echo "  [C] Continue building exactly this state (skip version selection)"
+    echo "  [R] Reset repository to clean state (discard all local changes)"
+    echo "  [A] Abort script"
+    echo ""
+    read -n 1 -p "Choice [C/r/A]: " answer
+    echo ""
+
+    case "${answer,,}" in
+        c|"")
+            echo "→ Building current (possibly dirty) working directory state."
             echo ""
-            echo "Available branches (origin/*):"
-            echo "------------------------------"
-            mapfile -t branch_list < <(git branch -r | grep -v 'HEAD' | sed 's/^[[:space:]]*origin\///' | sort | uniq)
-
-            if [ ${#branch_list[@]} -eq 0 ]; then
-                echo "No branches found. Falling back to manual entry."
-            else
-                for i in "${!branch_list[@]}"; do
-                    printf "  %2d) %s\n" "$((i+1))" "${branch_list[i]}"
-                done
+            # We skip version selection → define fallback version name
+            SELECTED_VERSION="local-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')-dirty"
+            if [[ "$SELECTED_VERSION" == "local-unknown-dirty" ]]; then
+                SELECTED_VERSION="local-dirty-$(date +%Y%m%d-%H%M%S)"
             fi
+            echo "Using version label: $SELECTED_VERSION"
             echo ""
-            echo "Type a number, or enter the branch name directly (e.g. master)."
-            read -p "Branch: " input
-            selected="$input"
+            # Jump over the version selection loop
+            SKIP_VERSION_SELECT=1
+            ;;
+        r|R)
+            echo "Discarding all local changes..."
+            git reset --hard HEAD >/dev/null 2>&1 || true
+            git clean -fd >/dev/null 2>&1 || true
+            git fetch --tags --prune origin >/dev/null 2>&1 || true
+            echo "Repository reset to clean state."
+            echo ""
+            # Continue normally → show menu
+            ;;
+        a|A|*)
+            echo "Aborted."
+            exit 1
+            ;;
+    esac
+fi
 
-            if [[ "$selected" =~ ^[0-9]+$ ]]; then
-                idx=$((selected - 1))
-                if (( idx >= 0 && idx < ${#branch_list[@]} )); then
-                    selected="${branch_list[idx]}"
+# ---------------------------------------------
+# Select a branch, tag, or commit
+# ---------------------------------------------
+if [[ "${SKIP_VERSION_SELECT:-0}" -eq 0 ]]; then
+    echo "Fetching latest tags, branches, and history..."
+    git fetch --tags --prune origin
+    while true; do
+        echo ""
+        echo "===================================================================="
+        echo " Which version do you want to build from?"
+        echo "===================================================================="
+        echo " 1) Branch tip     - Latest development code (may be unstable)"
+        echo " 2) Tag            - Fixed release point (recommended for stability)"
+        echo " 3) Commit hash    - Exact historical commit (advanced / reproduce bug)"
+        echo ""
+        echo " Most users should choose 2 (Tag) for a reliable, tested build."
+        echo " Press Enter for default (latest tag / stable release)."
+        echo "===================================================================="
+        read -p "Enter 1, 2, 3, or just press Enter for latest tag: " choice
+
+        if [ -z "$choice" ]; then
+            choice="2"
+        fi
+
+        case "$choice" in
+            1)  # ── Branch ───────────────────────────────────────────────────────────────
+                echo ""
+                echo "Available branches (origin/*):"
+                echo "------------------------------"
+                mapfile -t branch_list < <(git branch -r | grep -v 'HEAD' | sed 's/^[[:space:]]*origin\///' | sort | uniq)
+
+                if [ ${#branch_list[@]} -eq 0 ]; then
+                    echo "No branches found. Falling back to manual entry."
                 else
-                    echo "Invalid number."
+                    for i in "${!branch_list[@]}"; do
+                        printf "  %2d) %s\n" "$((i+1))" "${branch_list[i]}"
+                    done
+                fi
+                echo ""
+                echo "Type a number, or enter the branch name directly (e.g. master)."
+                read -p "Branch: " input
+                selected="$input"
+
+                if [[ "$selected" =~ ^[0-9]+$ ]]; then
+                    idx=$((selected - 1))
+                    if (( idx >= 0 && idx < ${#branch_list[@]} )); then
+                        selected="${branch_list[idx]}"
+                    else
+                        echo "Invalid number."
+                        continue
+                    fi
+                fi
+
+                if git rev-parse --verify "origin/$selected" >/dev/null 2>&1; then
+                    git checkout -B "$selected" "origin/$selected"
+                    echo ""
+                    echo "SUCCESS: Now tracking branch '$selected'"
+                    git status --short --branch
+
+                    SELECTED_VERSION=$(git rev-parse --short HEAD)
+                    echo "Selected version (short commit hash): $SELECTED_VERSION"
+
+                    break
+                else
+                    echo "Branch '$selected' not found. Try again."
                     continue
                 fi
-            fi
+                ;;
 
-            if git rev-parse --verify "origin/$selected" >/dev/null 2>&1; then
-                git checkout -B "$selected" "origin/$selected"
+            2)  # ── Tag ─────────────────────────────────────────────────────────────────
                 echo ""
-                echo "SUCCESS: Now tracking branch '$selected'"
-                git status --short --branch
+                echo "Recent tags (newest creation date first - last 24):"
+                echo "---------------------------------------------------"
+                mapfile -t tag_list < <(git tag --sort=-creatordate | head -24)
 
-                SELECTED_VERSION=$(git rev-parse --short HEAD)
-                echo "Selected version (short commit hash): $SELECTED_VERSION"
-
-                break
-            else
-                echo "Branch '$selected' not found. Try again."
-                continue
-            fi
-            ;;
-
-        2)  # ── Tag ─────────────────────────────────────────────────────────────────
-            echo ""
-            echo "Recent tags (newest creation date first - last 24):"
-            echo "---------------------------------------------------"
-            mapfile -t tag_list < <(git tag --sort=-creatordate | head -24)
-
-            if [ ${#tag_list[@]} -eq 0 ]; then
-                echo "No tags found."
-            else
-                for i in "${!tag_list[@]}"; do
-                    tag="${tag_list[i]}"
-                    desc=$(git log -1 --format="%ci %s" "$tag" 2>/dev/null | head -1 || echo "No description")
-                    printf "  %2d) %-20s  %s\n" "$((i+1))" "$tag" "$desc"
-                done
-            fi
-            echo ""
-            echo "Recommended: Pick a recent v0.1.x tag for stability."
-            echo "Type a number, or enter any tag name/hash directly."
-            read -p "Tag: " input
-            selected="$input"
-
-            if [[ "$selected" =~ ^[0-9]+$ ]]; then
-                idx=$((selected - 1))
-                if (( idx >= 0 && idx < ${#tag_list[@]} )); then
-                    selected="${tag_list[idx]}"
+                if [ ${#tag_list[@]} -eq 0 ]; then
+                    echo "No tags found."
                 else
-                    echo "Invalid number."
+                    for i in "${!tag_list[@]}"; do
+                        tag="${tag_list[i]}"
+                        desc=$(git log -1 --format="%ci %s" "$tag" 2>/dev/null | head -1 || echo "No description")
+                        printf "  %2d) %-20s  %s\n" "$((i+1))" "$tag" "$desc"
+                    done
+                fi
+                echo ""
+                echo "Recommended: Pick a recent v0.1.x tag for stability."
+                echo "Type a number, or enter any tag name/hash directly."
+                read -p "Tag: " input
+                selected="$input"
+
+                if [[ "$selected" =~ ^[0-9]+$ ]]; then
+                    idx=$((selected - 1))
+                    if (( idx >= 0 && idx < ${#tag_list[@]} )); then
+                        selected="${tag_list[idx]}"
+                    else
+                        echo "Invalid number."
+                        continue
+                    fi
+                fi
+
+                if git rev-parse --verify "refs/tags/$selected" >/dev/null 2>&1; then
+                    git checkout "$selected"
+                    echo ""
+                    echo "SUCCESS: Checked out tag '$selected' (detached HEAD)"
+                    echo "Note: Detached HEAD is normal/safe here."
+
+                    # ── Tag case: use the tag name directly ──
+                    SELECTED_VERSION="$selected"
+                    echo "Selected version (tag): $SELECTED_VERSION"
+
+                    # Optional: show the underlying commit too
+                    SHORT_COMMIT=$(git rev-parse --short HEAD)
+                    echo "  (points to commit: $SHORT_COMMIT)"
+
+                    git describe --tags --always
+                    break
+                else
+                    echo "Tag '$selected' not found. Try again (check spelling/case)."
                     continue
                 fi
-            fi
+                ;;
 
-            if git rev-parse --verify "refs/tags/$selected" >/dev/null 2>&1; then
-                git checkout "$selected"
+            3)  # ── Commit ──────────────────────────────────────────────────────────────
                 echo ""
-                echo "SUCCESS: Checked out tag '$selected' (detached HEAD)"
-                echo "Note: Detached HEAD is normal/safe here."
+                echo "Recent commits (newest first - last 24):"
+                echo "----------------------------------------"
+                mapfile -t commit_list < <(git log -24 --format="%h %ci %s" --no-merges)
 
-                # ── Tag case: use the tag name directly ──
-                SELECTED_VERSION="$selected"
-                echo "Selected version (tag): $SELECTED_VERSION"
-
-                # Optional: show the underlying commit too
-                SHORT_COMMIT=$(git rev-parse --short HEAD)
-                echo "  (points to commit: $SHORT_COMMIT)"
-
-                git describe --tags --always
-                break
-            else
-                echo "Tag '$selected' not found. Try again (check spelling/case)."
-                continue
-            fi
-            ;;
-
-        3)  # ── Commit ──────────────────────────────────────────────────────────────
-            echo ""
-            echo "Recent commits (newest first - last 24):"
-            echo "----------------------------------------"
-            mapfile -t commit_list < <(git log -24 --format="%h %ci %s" --no-merges)
-
-            if [ ${#commit_list[@]} -eq 0 ]; then
-                echo "No commits found."
-            else
-                for i in "${!commit_list[@]}"; do
-                    printf "  %2d) %s\n" "$((i+1))" "${commit_list[i]}"
-                done
-            fi
-            echo ""
-            echo "Type a number, or paste any commit hash."
-            read -p "Commit: " input
-            selected="$input"
-
-            if [[ "$selected" =~ ^[0-9]+$ ]]; then
-                idx=$((selected - 1))
-                if (( idx >= 0 && idx < ${#commit_list[@]} )); then
-                    selected=$(echo "${commit_list[idx]}" | cut -d' ' -f1)
+                if [ ${#commit_list[@]} -eq 0 ]; then
+                    echo "No commits found."
                 else
-                    echo "Invalid number."
+                    for i in "${!commit_list[@]}"; do
+                        printf "  %2d) %s\n" "$((i+1))" "${commit_list[i]}"
+                    done
+                fi
+                echo ""
+                echo "Type a number, or paste any commit hash."
+                read -p "Commit: " input
+                selected="$input"
+
+                if [[ "$selected" =~ ^[0-9]+$ ]]; then
+                    idx=$((selected - 1))
+                    if (( idx >= 0 && idx < ${#commit_list[@]} )); then
+                        selected=$(echo "${commit_list[idx]}" | cut -d' ' -f1)
+                    else
+                        echo "Invalid number."
+                        continue
+                    fi
+                fi
+
+                if git rev-parse --verify "$selected" >/dev/null 2>&1; then
+                    git checkout "$selected"
+                    echo ""
+                    echo "SUCCESS: Checked out commit '$selected' (detached HEAD)"
+
+                    SELECTED_VERSION=$(git rev-parse --short HEAD)
+                    echo "Selected version (short commit hash): $SELECTED_VERSION"
+
+                    git log -1 --oneline --decorate
+                    break
+                else
+                    echo "Commit '$selected' not found or invalid."
                     continue
                 fi
-            fi
+                ;;
 
-            if git rev-parse --verify "$selected" >/dev/null 2>&1; then
-                git checkout "$selected"
-                echo ""
-                echo "SUCCESS: Checked out commit '$selected' (detached HEAD)"
-
-                SELECTED_VERSION=$(git rev-parse --short HEAD)
-                echo "Selected version (short commit hash): $SELECTED_VERSION"
-
-                git log -1 --oneline --decorate
-                break
-            else
-                echo "Commit '$selected' not found or invalid."
+            *)
+                echo "Invalid choice. Please enter 1, 2, or 3 (or Enter for default)."
                 continue
-            fi
-            ;;
+                ;;
+        esac
+    done
+else
+    echo "Version selection skipped (building current working tree state)."
+fi
+echo ""
+echo "Selected version: $SELECTED_VERSION"
 
+# ---------------------------------------------
+# Select target platforms / CPU architectures
+# ---------------------------------------------
+echo ""
+echo "===================================================================="
+echo " Which platform(s) do you want to build?"
+echo "===================================================================="
+echo "  a) ALL platforms (x86_64 linux + aarch64 linux + riscv64 linux + win64)"
+echo "  x) x86_64-linux-gnu only"
+echo "  r) aarch64-linux-gnu (ARM64) only"
+echo "  v) riscv64-linux-gnu (RISC-V) only"
+echo "  w) win64 (Windows x86_64) only"
+echo "  q) Abort / Quit"
+echo ""
+echo " Most users should choose 'a' (ALL) for official release binaries."
+echo "===================================================================="
+
+BUILD_ALL=0
+BUILD_X86=0
+BUILD_AARCH64=0
+BUILD_RISCV64=0
+BUILD_WIN64=0
+
+while true; do
+    read -n 1 -p "Choice [a/x/r/v/w/q]: " plat_choice
+    echo ""  # new line after single-key input
+
+    case "${plat_choice,,}" in
+        a)
+            BUILD_ALL=1
+            BUILD_X86=1
+            BUILD_AARCH64=1
+            BUILD_RISCV64=1
+            BUILD_WIN64=1
+            echo "→ Building ALL platforms"
+            break
+            ;;
+        x)
+            BUILD_X86=1
+            echo "→ Building x86_64-linux-gnu only"
+            break
+            ;;
+        r)
+            BUILD_AARCH64=1
+            echo "→ Building aarch64-linux-gnu only"
+            break
+            ;;
+        v)
+            BUILD_RISCV64=1
+            echo "→ Building riscv64-linux-gnu only"
+            break
+            ;;
+        w)
+            BUILD_WIN64=1
+            echo "→ Building win64 only"
+            break
+            ;;
+        q|Q)
+            echo "Aborted by user."
+            exit 0
+            ;;
         *)
-            echo "Invalid choice. Please enter 1, 2, or 3 (or Enter for default)."
+            echo "Invalid choice. Please try again."
             continue
             ;;
     esac
 done
-echo ""
-echo "Selected version: $SELECTED_VERSION"
+
+if [[ $BUILD_ALL -eq 0 && $BUILD_X86 -eq 0 && $BUILD_AARCH64 -eq 0 && $BUILD_RISCV64 -eq 0 && $BUILD_WIN64 -eq 0 ]]; then
+    echo "No platforms selected — nothing to build. Exiting."
+    exit 0
+fi
 
 # ---------------------------------------------
 # Install Essential Tools
@@ -289,160 +478,193 @@ touch ./bin/SHA256SUMS # Compressed Binary hashes are stored here
 echo "Generated binaries and related files will be transfered to the \"./azcoin/bin\" directory."
 
 ###################################### x86 64 Bit ##############################################
-echo "Ready to compile for linux (x86_64)"
-read -p "Press [Enter] key to continue..."
+if [[ $BUILD_X86 -eq 1 || $BUILD_ALL -eq 1 ]]; then
+    echo "Compiling for linux (x86_64)"
 
-# Prepare the Cross Compiler for "x86 64 Bit"
-cd ./depends
-make clean
-make HOST=x86_64-pc-linux-gnu NO_TEST=1 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
+    # Prepare the Cross Compiler for "x86 64 Bit"
+    cd ./depends
+    make clean
+    make HOST=x86_64-pc-linux-gnu NO_TEST=1 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #x86 64-bit
 
-# Make Configuration
-cd ..
-./autogen.sh # Make sure Bash's current working directory is the azcoin directory
+    # Make Configuration
+    cd ..
+    ./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-# Select Configuration for "x86 64 Bit"
-CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure
+    # Select Configuration for "x86 64 Bit"
+    CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure
 
-# Compile /w All Available Cores & Install
-make clean
-make -j $(($(nproc)+1))
+    # Compile /w All Available Cores & Install
+    make clean
+    make -j $(($(nproc)+1))
 
-# Create Compressed Install Files in ./bin Directory
-make install DESTDIR=$PWD/mkinstall
-mv ./mkinstall/usr/local ./azcoin-install
-rm -rf ./mkinstall
+    # Create Compressed Install Files in ./bin Directory
+    make install DESTDIR=$PWD/mkinstall
+    mv ./mkinstall/usr/local ./azcoin-install
+    rm -rf ./mkinstall
 
-# Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench_*
-rm ./azcoin-install/bin/test_*
-rm -rf ./azcoin-install/include
-rm -rf ./azcoin-install/lib
-rm -rf ./azcoin-install/share/man
-cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+    # Customize azcoin-install files & directory structure
+    rm ./azcoin-install/bin/bench_*
+    rm ./azcoin-install/bin/test_*
+    rm -rf ./azcoin-install/include
+    rm -rf ./azcoin-install/lib
+    rm -rf ./azcoin-install/share/man
+    cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-# Compress Install Files for "x86 64 Bit"
-tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ./azcoin-install #x86 64-Bit
-rm -rf ./azcoin-install
+    # Compress Install Files for "x86 64 Bit"
+    tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ./azcoin-install #x86 64-Bit
+    rm -rf ./azcoin-install
+fi
 
 ###################################### ARM 64 Bit ##############################################
-echo "Ready to compile for linux (ARM_64)"
-read -p "Press [Enter] key to continue..."
+if [[ $BUILD_AARCH64 -eq 1 || $BUILD_ALL -eq 1 ]]; then
+    echo "Compiling for linux (ARM64)"
 
-# Prepare the Cross Compiler for "ARM 64 Bit"
-cd ./depends
-make clean
-make HOST=aarch64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 64-bit
+    # Prepare the Cross Compiler for "ARM 64 Bit"
+    cd ./depends
+    make clean
+    make HOST=aarch64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #ARM 64-bit
 
-# Make Configuration
-cd ..
-./autogen.sh # Make sure Bash's current working directory is the azcoin directory
+    # Make Configuration
+    cd ..
+    ./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-# Select Configuration for "ARM 64 Bit"
-CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure
+    # Select Configuration for "ARM 64 Bit"
+    CONFIG_SITE=$PWD/depends/aarch64-linux-gnu/share/config.site ./configure
 
-# Compile /w All Available Cores & Install
-make clean
-make -j $(($(nproc)+1))
+    # Compile /w All Available Cores & Install
+    make clean
+    make -j $(($(nproc)+1))
 
-# Create Compressed Install Files in ./bin Directory
-make install DESTDIR=$PWD/mkinstall
-mv ./mkinstall/usr/local ./azcoin-install
-rm -rf ./mkinstall
+    # Create Compressed Install Files in ./bin Directory
+    make install DESTDIR=$PWD/mkinstall
+    mv ./mkinstall/usr/local ./azcoin-install
+    rm -rf ./mkinstall
 
-# Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench*
-rm ./azcoin-install/bin/test*
-rm -rf ./azcoin-install/include
-rm -rf ./azcoin-install/lib
-rm -rf ./azcoin-install/share/man
-cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+    # Customize azcoin-install files & directory structure
+    rm ./azcoin-install/bin/bench*
+    rm ./azcoin-install/bin/test*
+    rm -rf ./azcoin-install/include
+    rm -rf ./azcoin-install/lib
+    rm -rf ./azcoin-install/share/man
+    cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-# Compress Install Files for "ARM 64 Bit"
-tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
-rm -rf ./azcoin-install
+    # Compress Install Files for "ARM 64 Bit"
+    tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
+    rm -rf ./azcoin-install
+fi
 
 ###################################### RISC-V 64 Bit ##############################################
-echo "Ready to compile for linux (riscv64)"
-read -p "Press [Enter] key to continue..."
+if [[ $BUILD_RISCV64 -eq 1 || $BUILD_ALL -eq 1 ]]; then
+    echo "Compiling for linux (riscv64)"
 
-# Prepare the Cross Compiler for "ARM 64 Bit"
-cd ./depends
-make clean
-make HOST=riscv64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #RISC-V 64-bit
+    # Prepare the Cross Compiler for "ARM 64 Bit"
+    cd ./depends
+    make clean
+    make HOST=riscv64-linux-gnu NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #RISC-V 64-bit
 
-# Make Configuration
-cd ..
-./autogen.sh # Make sure Bash's current working directory is the azcoin directory
+    # Make Configuration
+    cd ..
+    ./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-# Select Configuration for "RISC-V 64 Bit"
-CONFIG_SITE=$PWD/depends/riscv64-linux-gnu/share/config.site ./configure
+    # Select Configuration for "RISC-V 64 Bit"
+    CONFIG_SITE=$PWD/depends/riscv64-linux-gnu/share/config.site ./configure
 
-# Compile /w All Available Cores & Install
-make clean
-make -j $(($(nproc)+1))
+    # Compile /w All Available Cores & Install
+    make clean
+    make -j $(($(nproc)+1))
 
-# Create Compressed Install Files in ./bin Directory
-make install DESTDIR=$PWD/mkinstall
-mv ./mkinstall/usr/local ./azcoin-install
-rm -rf ./mkinstall
+    # Create Compressed Install Files in ./bin Directory
+    make install DESTDIR=$PWD/mkinstall
+    mv ./mkinstall/usr/local ./azcoin-install
+    rm -rf ./mkinstall
 
-# Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench*
-rm ./azcoin-install/bin/test*
-rm -rf ./azcoin-install/include
-rm -rf ./azcoin-install/lib
-rm -rf ./azcoin-install/share/man
-cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+    # Customize azcoin-install files & directory structure
+    rm ./azcoin-install/bin/bench*
+    rm ./azcoin-install/bin/test*
+    rm -rf ./azcoin-install/include
+    rm -rf ./azcoin-install/lib
+    rm -rf ./azcoin-install/share/man
+    cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-# Compress Install Files for "ARM 64 Bit"
-tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
-rm -rf ./azcoin-install
+    # Compress Install Files for "ARM 64 Bit"
+    tar -czvf ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ./azcoin-install #ARM 64-Bit
+    rm -rf ./azcoin-install
+fi
 
 ###################################### Windows x86 64 Bit ##############################################
-echo "Ready to compile for Windows (x86_64)"
-read -p "Press [Enter] key to continue..."
+if [[ $BUILD_WIN64 -eq 1 || $BUILD_ALL -eq 1 ]]; then
+    echo "Compiling for Windows (x86_64)"
 
-# Prepare the Cross Compiler for "Windows x86 64 Bit"
-cd ./depends
-make clean
-make HOST=x86_64-w64-mingw32 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
+    # Prepare the Cross Compiler for "Windows x86 64 Bit"
+    cd ./depends
+    make clean
+    make HOST=x86_64-w64-mingw32 NO_QT=1 NO_QR=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 -j $(($(nproc)+1)) #Windows (x86 64-bit)
 
-# Make Configuration
-cd ..
-./autogen.sh # Make sure Bash's current working directory is the azcoin directory
+    # Make Configuration
+    cd ..
+    ./autogen.sh # Make sure Bash's current working directory is the azcoin directory
 
-# Select Configuration for "Windows x86 64 Bit"
-CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure
+    # Select Configuration for "Windows x86 64 Bit"
+    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure
 
-# Compile /w All Available Cores & Install
-make clean
-make -j $(($(nproc)+1))
+    # Compile /w All Available Cores & Install
+    make clean
+    make -j $(($(nproc)+1))
 
-# Create Compressed Install Files in ./bin Directory
-rm -rf ./mkinstall
-rm -rf ./azcoin-install
-make install DESTDIR=$PWD/mkinstall
-mv ./mkinstall/usr/local ./azcoin-install
+    # Create Compressed Install Files in ./bin Directory
+    rm -rf ./mkinstall
+    rm -rf ./azcoin-install
+    make install DESTDIR=$PWD/mkinstall
+    mv ./mkinstall/usr/local ./azcoin-install
 
-# Customize azcoin-install files & directory structure
-rm ./azcoin-install/bin/bench*
-rm ./azcoin-install/bin/test*
-rm ./azcoin-install/bin/libbitcoinconsensus-0.dll
-rm -rf ./azcoin-install/include
-rm -rf ./azcoin-install/lib
-rm -rf ./azcoin-install/share/man
-cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
+    # Customize azcoin-install files & directory structure
+    rm ./azcoin-install/bin/bench*
+    rm ./azcoin-install/bin/test*
+    rm ./azcoin-install/bin/libbitcoinconsensus-0.dll
+    rm -rf ./azcoin-install/include
+    rm -rf ./azcoin-install/lib
+    rm -rf ./azcoin-install/share/man
+    cp -r ./share/rpcauth ./azcoin-install/share/rpcauth
 
-# Compress Install Files for "Windows x86 64 Bit"
-zip -ll -X -r ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip ./azcoin-install #Windows x86 64-bit
-rm -rf ./azcoin-install
+    # Compress Install Files for "Windows x86 64 Bit"
+    zip -ll -X -r ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip ./azcoin-install #Windows x86 64-bit
+    rm -rf ./azcoin-install
+fi
 
 # ---------------------------------------------
 # Calculate Hashes
 # ---------------------------------------------
-sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
-sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
-sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz >> ./bin/SHA256SUMS
-sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip >> ./bin/SHA256SUMS
+echo ""
+echo "Generating SHA256 checksums..."
 
+any_built=0
+
+[[ -f ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ]] && {
+    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    any_built=1
+}
+
+[[ -f ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ]] && {
+    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    any_built=1
+}
+
+[[ -f ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ]] && {
+    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    any_built=1
+}
+
+[[ -f ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip ]] && {
+    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip | tee -a ./bin/SHA256SUMS
+    any_built=1
+}
+
+if [[ $any_built -eq 1 ]]; then
+    echo ""
+    echo "SHA256SUMS file created. Content:"
+    echo "----------------------------------------"
+    cat ./bin/SHA256SUMS
+    echo "----------------------------------------"
+else
+    echo "Warning: No binaries were built → SHA256SUMS is empty."
+fi
