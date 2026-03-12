@@ -107,13 +107,18 @@ echo "Git is installed."
 REPO_NAME="azcoin"
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 if [[ "$(basename "$SCRIPT_DIR")" == "$REPO_NAME" ]] && [[ -d "$SCRIPT_DIR/.git" ]]; then
-    echo "Script is running from inside the $REPO_NAME repository."
-    echo "Using current directory as build root (skipping clone)."
+    echo "Detected script running inside $REPO_NAME repository."
+    if ! cd "$SCRIPT_DIR"; then
+        echo "Error: Cannot change directory to repository root ($SCRIPT_DIR)."
+        exit 1
+    fi
+    
+    echo "Changed working directory to repo root → proceeding."
+    git fetch --tags --prune origin >/dev/null 2>&1 || true
     SKIP_CLONE=1
 else
     SKIP_CLONE=0
 fi
-
 
 # ────────────────────────────────────────────────────────────────
 #  Clone azcoin repository — only run this section if not already inside repo
