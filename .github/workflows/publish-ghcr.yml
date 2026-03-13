@@ -49,13 +49,24 @@ jobs:
           set -euo pipefail
 
           IMAGE="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}"
-          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+
           REF_TYPE="${GITHUB_REF_TYPE}"
           REF_NAME="${GITHUB_REF_NAME}"
           SHA="${GITHUB_SHA}"
 
           # Always publish a sha tag (full 40-char sha)
-          TAGS="${IMAGE}:sha-${SHA}"
+          TAGS="${IMAGE}:sha-${SHA:0:7}"  # short SHA is common; use ${SHA} for full if preferred
 
-          # If this run is for a git tag (v*), also publish that tag
-          if [[ "$]()]()"
+          # If on default branch (main), add :latest
+          if [[ "${REF_TYPE}" == "branch" ]] && [[ "${REF_NAME}" == "${{ github.event.repository.default_branch }}" ]]; then
+            TAGS="${TAGS},${IMAGE}:latest"
+          fi
+
+          # If this is a git tag starting with 'v', also publish that tag (e.g. v1.2.3)
+          if [[ "${REF_TYPE}" == "tag" ]] && [[ "${REF_NAME}" =~ ^v ]]; then
+            TAGS="${TAGS},${IMAGE}:${REF_NAME}"
+            TAGS="${TAGS},${IMAGE}:latest"  # optional: also update :latest on tagged releases
+          fi
+
+          # Output for next steps (e.g. docker/build-push-action)
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
