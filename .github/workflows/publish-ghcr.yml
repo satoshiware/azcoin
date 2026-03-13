@@ -58,4 +58,4 @@ jobs:
           TAGS="${IMAGE}:sha-${SHA}"
 
           # If this run is for a git tag (v*), also publish that tag
-          if [[ "$]()]()
+          if [[ "$]()]()"
