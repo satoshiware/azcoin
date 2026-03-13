@@ -645,22 +645,22 @@ echo "Generating SHA256 checksums..."
 any_built=0
 
 [[ -f ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ]] && {
-    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    ( cd ./bin && sha256sum azcoin-${SELECTED_VERSION#v}-x86_64-linux-gnu.tar.gz ) | tee -a ./bin/SHA256SUMS
     any_built=1
 }
 
 [[ -f ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ]] && {
-    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    ( cd ./bin && sha256sum azcoin-${SELECTED_VERSION#v}-aarch64-linux-gnu.tar.gz ) | tee -a ./bin/SHA256SUMS
     any_built=1
 }
 
 [[ -f ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ]] && {
-    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz | tee -a ./bin/SHA256SUMS
+    ( cd ./bin && sha256sum azcoin-${SELECTED_VERSION#v}-riscv64-linux-gnu.tar.gz ) | tee -a ./bin/SHA256SUMS
     any_built=1
 }
 
 [[ -f ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip ]] && {
-    sha256sum ./bin/azcoin-${SELECTED_VERSION#v}-win64.zip | tee -a ./bin/SHA256SUMS
+    ( cd ./bin && sha256sum azcoin-${SELECTED_VERSION#v}-win64.zip ) | tee -a ./bin/SHA256SUMS
     any_built=1
 }
 
