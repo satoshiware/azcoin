@@ -2,6 +2,7 @@
 
 *.exe
 *.pdb
+Makefile [0-9]*
 src/bitcoin
 src/bitcoind
 src/bitcoin-cli
@@ -10,9 +11,14 @@ src/bitcoin-node
 src/bitcoin-tx
 src/bitcoin-util
 src/bitcoin-wallet
-src/test/fuzz/fuzz
-src/test/test_bitcoin
-src/qt/test/test_bitcoin-qt
+src/azcoind*
+src/azcoin-cli*
+src/azcoin-tx*
+src/azcoin-util*
+src/azcoin-wallet*
+src/test/fuzz/fuzz*
+src/test/test_bitcoin*
+src/qt/test/test_bitcoin-qt*
 # autoreconf
 Makefile.in
 aclocal.m4
@@ -22,22 +28,30 @@ build-aux/config.sub
 build-aux/depcomp
 build-aux/install-sh
 build-aux/ltmain.sh
+build-aux/* [0-9]*
 build-aux/m4/libtool.m4
+/build-aux/m4/libtool [0-9]*.m4
 build-aux/m4/lt~obsolete.m4
 build-aux/m4/ltoptions.m4
 build-aux/m4/ltsugar.m4
 build-aux/m4/ltversion.m4
+build-aux/m4/* [0-9]*.m4
 build-aux/missing
 build-aux/compile
 build-aux/test-driver
 config.cache
 config.log
 config.status
+/config [0-9]*.log
+/config [0-9]*.status
 configure
 libtool
+/libtool [0-9]*
 src/config/bitcoin-config.h
 src/config/bitcoin-config.h.in
 src/config/stamp-h1
+src/config/bitcoin-config*.h
+src/config/stamp-h1*
 src/obj
 share/setup.nsi
 share/qt/Info.plist
@@ -52,7 +66,7 @@ src/qt/bitcoin-qt.creator.user
 src/qt/bitcoin-qt.files
 src/qt/bitcoin-qt.includes
 .deps
-.dirstamp
+.dirstamp*
 .libs
 .*.swp
 *~
@@ -72,6 +86,8 @@ src/qt/bitcoin-qt.includes
 *.iso
 *.json.h
 *.raw.h
+*.json*.h
+*.raw*.h
 # Only ignore unexpected patches
 *.patch
 !contrib/guix/patches/*.patch
@@ -111,13 +127,21 @@ qa-assets/
 linux-coverage-build
 linux-build
 win32-build
-test/config.ini
+/test/config*.ini
 test/cache/*
 test/.mypy_cache/
+/src/bench/bench_bitcoin*
+/src/bench/data/*.raw*.h
+/src/test/data/*.json*.h
+/src/test/data/*.raw*.h
+/src/secp256k1/build-aux/* [0-9]*
+/src/secp256k1/build-aux/m4/* [0-9]*.m4
 !src/leveldb*/Makefile
 /doc/doxygen/
 libbitcoinconsensus.pc
+/src/secp256k1/build-aux/m4/libtool [0-9]*.m4
 contrib/devtools/split-debug.sh
+contrib/devtools/* [0-9]*.sh
 # Output from running db4 installation
 db4/
 # clang-check
@@ -125,12 +149,9 @@ db4/
 osx_volname
 dist/
 /guix-build-*
-<<<<<<< HEAD
-=======
 # Local Docker Compose env files (do not commit secrets)
 .env
 docker/.env
 # large artifacts
 azcoin.bundle
 *.bundle
->>>>>>> feature/docker-harden-and-azcoin-wrappers

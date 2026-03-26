@@ -238,11 +238,27 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             "src",
             "bitcoind" + config["environment"]["EXEEXT"],
         )
+        if not os.path.isfile(fname_bitcoind):
+            alt_bitcoind = os.path.join(
+                config["environment"]["BUILDDIR"],
+                "src",
+                "azcoind" + config["environment"]["EXEEXT"],
+            )
+            if os.path.isfile(alt_bitcoind):
+                fname_bitcoind = alt_bitcoind
         fname_bitcoincli = os.path.join(
             config["environment"]["BUILDDIR"],
             "src",
             "bitcoin-cli" + config["environment"]["EXEEXT"],
         )
+        if not os.path.isfile(fname_bitcoincli):
+            alt_bitcoincli = os.path.join(
+                config["environment"]["BUILDDIR"],
+                "src",
+                "azcoin-cli" + config["environment"]["EXEEXT"],
+            )
+            if os.path.isfile(alt_bitcoincli):
+                fname_bitcoincli = alt_bitcoincli
         self.options.bitcoind = os.getenv("BITCOIND", default=fname_bitcoind)
         self.options.bitcoincli = os.getenv("BITCOINCLI", default=fname_bitcoincli)
 
